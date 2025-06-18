@@ -1,0 +1,5 @@
+/* Remove all borders and box-shadows from About page elements */
+.about-page *, .about-page *::before, .about-page *::after {
+  border: none !important;
+  box-shadow: none !important;
+} 
