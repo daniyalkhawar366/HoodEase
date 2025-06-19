@@ -7,8 +7,11 @@ import FullSection from '@/components/FullSection';
 import HorizontalScroll from '@/components/HorizontalScroll';
 import { motion } from 'framer-motion';
 import { ArrowRight, Instagram, Twitter, Facebook } from 'lucide-react';
+import { useStackScroll } from '@/hooks/useStackScroll';
 
 export default function Home() {
+  useStackScroll(); // Initialize stack scroll effect
+
   const heroImages = [
     'https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg',
     'https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg',

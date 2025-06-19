@@ -51,15 +51,9 @@
   }
   
   html {
-    scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
     height: 100%;
     margin: 0;
-  }
-  
-  .snap-section {
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
   }
   
   #__next {
@@ -90,8 +84,30 @@
   .immersive-section {
     height: 100vh;
     width: 100vw;
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     overflow: hidden;
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .immersive-section:nth-child(1) { z-index: 1; }
+  .immersive-section:nth-child(2) { z-index: 2; }
+  .immersive-section:nth-child(3) { z-index: 3; }
+  .immersive-section:nth-child(4) { z-index: 4; }
+  .immersive-section:nth-child(5) { z-index: 5; }
+  
+  .immersive-section.stack-hidden {
+    transform: translateY(100vh);
+  }
+  
+  .immersive-section.stack-visible {
+    transform: translateY(0);
+  }
+  
+  /* Ensure first section is visible by default */
+  .immersive-section:first-child {
+    transform: translateY(0);
   }
   
   .full-bg-image {

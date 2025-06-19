@@ -16,7 +16,7 @@ export default function FullSection({ children, backgroundImage, className, id }
     <section 
       id={id}
       className={cn(
-        "immersive-section snap-section",
+        "immersive-section",
         className
       )}
     >
