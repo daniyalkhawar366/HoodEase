@@ -20,7 +20,7 @@ export default function ClientLayoutWrapper({
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const isStaticNavbar = pathname === '/shop/men' || pathname === '/shop/women' || pathname === '/shop/kids' || pathname === '/contact';
+  const isStaticNavbar = pathname === '/shop/men' || pathname === '/shop/women' || pathname === '/shop/kids' || pathname === '/contact' || pathname === '/cart';
 
   return (
     <div className="flex flex-col min-h-screen">

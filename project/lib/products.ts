@@ -463,5 +463,5 @@ export const getProductBySlug = (slug: string) =>
 
 export const getRelatedProducts = (currentProduct: Product, limit = 4) =>
   products
-    .filter(p => p.category === currentProduct.category && p.id !== currentProduct.id)
+    .filter(p => p.category === currentProduct.category && p.subcategory === currentProduct.subcategory && p.id !== currentProduct.id)
     .slice(0, limit);

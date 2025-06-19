@@ -61,7 +61,7 @@ export default function CartPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card>
+                <Card className="bg-white">
                   <CardContent className="p-6">
                     <div className="flex gap-6">
                       <div className="relative w-24 h-24 flex-shrink-0">
@@ -78,7 +78,7 @@ export default function CartPage() {
                         <p className="text-gray-600 mb-2">
                           {item.selectedColor} • {item.selectedSize}
                         </p>
-                        <p className="font-bold text-lg">${item.price}</p>
+                        <p className="font-bold text-lg">PKR {item.price.toLocaleString('en-PK')}</p>
                       </div>
 
                       <div className="flex flex-col items-end gap-4">
@@ -104,6 +104,7 @@ export default function CartPage() {
                                 item.quantity - 1
                               )
                             }
+                            className="bg-black text-white border-black hover:bg-gray-800"
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -121,6 +122,7 @@ export default function CartPage() {
                                 item.quantity + 1
                               )
                             }
+                            className="bg-black text-white border-black hover:bg-gray-800"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -139,14 +141,14 @@ export default function CartPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="sticky top-24">
-              <CardContent className="p-6">
+            <Card className="sticky top-24 bg-black text-white">
+              <CardContent className="p-6 pb-8">
                 <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>PKR {totalPrice.toLocaleString('en-PK')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
@@ -154,7 +156,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>${(totalPrice * 0.1).toFixed(2)}</span>
+                    <span>PKR {(totalPrice * 0.1).toLocaleString('en-PK')}</span>
                   </div>
                 </div>
 
@@ -162,18 +164,18 @@ export default function CartPage() {
 
                 <div className="flex justify-between text-lg font-bold mb-6">
                   <span>Total</span>
-                  <span>${(totalPrice * 1.1).toFixed(2)}</span>
+                  <span>PKR {(totalPrice * 1.1).toLocaleString('en-PK')}</span>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-8">
                   <Link href="/checkout">
-                    <Button size="lg" className="w-full bg-brand-600 hover:bg-brand-700">
+                    <Button size="lg" className="w-full bg-white text-black hover:bg-gray-100 mb-4">
                       Proceed to Checkout
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                   <Link href="/shop/men">
-                    <Button variant="outline" size="lg" className="w-full">
+                    <Button variant="outline" size="lg" className="w-full bg-brand-600 text-black hover:bg-brand-700 mt-4">
                       Continue Shopping
                     </Button>
                   </Link>

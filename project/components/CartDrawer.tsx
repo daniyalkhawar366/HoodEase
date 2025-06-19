@@ -14,7 +14,7 @@ export default function CartDrawer() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={toggleCart}>
-      <SheetContent className="w-full sm:max-w-lg">
+      <SheetContent className="w-full sm:max-w-lg bg-white">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
@@ -46,7 +46,7 @@ export default function CartDrawer() {
                       <p className="text-sm text-gray-500">
                         {item.selectedColor} • {item.selectedSize}
                       </p>
-                      <p className="font-semibold">${item.price}</p>
+                      <p className="font-semibold">PKR {item.price.toLocaleString('en-PK')}</p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <Button
@@ -62,7 +62,7 @@ export default function CartDrawer() {
                           variant="outline"
                           size="icon"
                           onClick={() => updateQuantity(item.id, item.selectedColor, item.selectedSize, item.quantity - 1)}
-                          className="h-6 w-6"
+                          className="h-6 w-6 bg-black text-white border-black hover:bg-gray-800"
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -71,7 +71,7 @@ export default function CartDrawer() {
                           variant="outline"
                           size="icon"
                           onClick={() => updateQuantity(item.id, item.selectedColor, item.selectedSize, item.quantity + 1)}
-                          className="h-6 w-6"
+                          className="h-6 w-6 bg-black text-white border-black hover:bg-gray-800"
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
@@ -84,18 +84,18 @@ export default function CartDrawer() {
           </div>
           
           {cart.length > 0 && (
-            <div className="border-t pt-6 space-y-4">
+            <div className="border-t pt-6 pb-6 space-y-4">
               <div className="flex justify-between text-lg font-semibold">
-                <span>Total: ${totalPrice.toFixed(2)}</span>
+                <span>Total: PKR {totalPrice.toLocaleString('en-PK')}</span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-6">
                 <Link href="/cart" onClick={toggleCart}>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full bg-white text-black border-gray-300 hover:bg-gray-50">
                     View Cart
                   </Button>
                 </Link>
                 <Link href="/checkout" onClick={toggleCart}>
-                  <Button className="w-full bg-brand-600 hover:bg-brand-700">
+                  <Button className="w-full bg-black hover:bg-gray-800 text-white">
                     Checkout
                   </Button>
                 </Link>

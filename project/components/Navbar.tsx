@@ -100,11 +100,13 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
             className={`relative ${textColorClass} ${hoverTextColorClass} hover:bg-transparent h-10 w-10 transition-colors duration-300`}
           >
             <ShoppingCart className="h-5 w-5" />
-            {totalItems > 0 && (
-              <span className={`absolute -top-1 -right-1 ${isLandingPage ? 'bg-white text-black' : 'bg-black text-white'} text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold`}>
-                {totalItems}
-              </span>
-            )}
+            <span
+              suppressHydrationWarning
+              className={`absolute -top-1 -right-1 ${isLandingPage ? 'bg-white text-black' : 'bg-black text-white'} text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold transition-opacity duration-200 ${totalItems > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              aria-hidden={totalItems === 0}
+            >
+              {totalItems}
+            </span>
           </Button>
         </div>
       </div>

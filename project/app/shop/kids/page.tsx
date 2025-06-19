@@ -6,6 +6,7 @@ import { productsKids } from '@/lib/products-kids';
 import ProductCard from '@/components/ProductCard';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 const kidsCategories = [
   { 
@@ -33,6 +34,7 @@ const kidsCategories = [
 export default function KidsShopPage() {
   const products = productsKids;
   const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<string>('alphabetical');
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -40,6 +42,18 @@ export default function KidsShopPage() {
   const filteredProducts = activeSubcategory
     ? products.filter((p) => p.subcategory === activeSubcategory)
     : products;
+
+  // Sort products based on sortOption
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === 'alphabetical') {
+      return a.name.localeCompare(b.name);
+    } else if (sortOption === 'priceLowHigh') {
+      return a.price - b.price;
+    } else if (sortOption === 'priceHighLow') {
+      return b.price - a.price;
+    }
+    return 0;
+  });
 
   useEffect(() => {
     const handler = () => setActiveSubcategory(null);
@@ -83,7 +97,7 @@ export default function KidsShopPage() {
         </nav>
 
         {/* Category Circles Row */}
-        <div className="flex justify-center space-x-8 px-8 pb-6 mb-8">
+        <div className="flex justify-center space-x-8 px-8 pb-6 mb-2">
           {kidsCategories.map((cat) => (
             <div
               key={cat.name}
@@ -103,10 +117,26 @@ export default function KidsShopPage() {
             </div>
           ))}
         </div>
+        {/* Sorting Dropdown */}
+        <div className="mb-6 flex items-center gap-2 font-sans" style={{fontFamily: 'Poppins, Inter, sans-serif'}}>
+          <span className="text-sm text-gray-700 font-medium">Sort by:</span>
+          <div className="min-w-[180px]">
+            <Select value={sortOption} onValueChange={setSortOption}>
+              <SelectTrigger className="w-full bg-white text-sm font-sans" style={{fontFamily: 'Poppins, Inter, sans-serif'}}>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="alphabetical">Alphabetical (A-Z)</SelectItem>
+                <SelectItem value="priceLowHigh">Price: Low to High</SelectItem>
+                <SelectItem value="priceHighLow">Price: High to Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 transition-all duration-500">
-          {filteredProducts.map((product, index) => (
+          {sortedProducts.map((product, index) => (
             <div key={product.id} className="transition-opacity duration-500 opacity-100">
               <ProductCard product={product} index={index} />
               <div className="mt-2 text-xs text-gray-500 font-semibold text-center" style={{ fontFamily: 'Poppins, Inter, sans-serif' }}>
