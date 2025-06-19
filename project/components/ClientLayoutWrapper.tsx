@@ -20,11 +20,17 @@ export default function ClientLayoutWrapper({
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const isStaticNavbar = pathname === '/shop/men' || pathname === '/shop/women' || pathname === '/shop/kids' || pathname === '/contact' || pathname === '/cart';
+  const isStaticNavbar = pathname === '/shop/men' || 
+                        pathname === '/shop/women' || 
+                        pathname === '/shop/kids' || 
+                        pathname === '/contact' || 
+                        pathname === '/cart' ||
+                        pathname.startsWith('/product/');
+  const isAdminRoute = pathname.startsWith('/admin');
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar toggleSidebar={toggleSidebar} isStatic={isStaticNavbar} />
+      {!isAdminRoute && <Navbar toggleSidebar={toggleSidebar} isStatic={isStaticNavbar} />}
       <main className={`flex-grow ${isSidebarOpen ? 'overflow-hidden' : ''}`}>
         {children}
       </main>
