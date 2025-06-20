@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ interface AuthModalProps {
   onClose: () => void;
   onLogin: (email: string, password: string) => void;
   onSignup: (userData: SignupData) => void;
+  defaultMode?: 'login' | 'signup';
 }
 
 interface SignupData {
@@ -24,10 +25,15 @@ interface SignupData {
   dateOfBirth: string;
 }
 
-export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthModalProps) {
-  const [isLogin, setIsLogin] = useState(true);
+export default function AuthModal({ isOpen, onClose, onLogin, onSignup, defaultMode = 'login' }: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(defaultMode === 'login');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Update mode when defaultMode prop changes
+  useEffect(() => {
+    setIsLogin(defaultMode === 'login');
+  }, [defaultMode]);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -128,7 +134,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
 
   const handleClose = () => {
     onClose();
-    setIsLogin(true);
+    setIsLogin(defaultMode === 'login');
     setErrors({});
     setShowPassword(false);
     setLoginEmail('');

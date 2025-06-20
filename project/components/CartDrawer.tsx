@@ -88,13 +88,13 @@ export default function CartDrawer() {
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total: PKR {totalPrice.toLocaleString('en-PK')}</span>
               </div>
-              <div className="space-y-6">
-                <Link href="/cart" onClick={toggleCart}>
+              <div>
+                <Link href="/cart" onClick={toggleCart} className="block mb-6">
                   <Button variant="outline" className="w-full bg-white text-black border-gray-300 hover:bg-gray-50">
                     View Cart
                   </Button>
                 </Link>
-                <Link href="/checkout" onClick={toggleCart}>
+                <Link href="/checkout" onClick={toggleCart} className="block">
                   <Button className="w-full bg-black hover:bg-gray-800 text-white">
                     Checkout
                   </Button>

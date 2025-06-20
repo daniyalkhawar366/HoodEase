@@ -55,7 +55,7 @@ export default function CheckoutPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen pt-20 bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen pt-20 bg-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">No items to checkout</h1>
           <p className="text-gray-600">Add some items to your cart first.</p>
@@ -65,7 +65,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen pt-20 bg-gray-50">
+    <div className="min-h-screen pt-20 bg-white">
       <div className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -86,7 +86,7 @@ export default function CheckoutPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <Card>
+                <Card className="bg-white border border-gray-200">
                   <CardHeader>
                     <CardTitle>Contact Information</CardTitle>
                   </CardHeader>
@@ -100,6 +100,7 @@ export default function CheckoutPage() {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
+                        className="bg-white"
                       />
                     </div>
                   </CardContent>
@@ -112,7 +113,7 @@ export default function CheckoutPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <Card>
+                <Card className="bg-white border border-gray-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Truck className="h-5 w-5" />
@@ -129,6 +130,7 @@ export default function CheckoutPage() {
                           value={formData.firstName}
                           onChange={handleInputChange}
                           required
+                          className="bg-white"
                         />
                       </div>
                       <div>
@@ -139,6 +141,7 @@ export default function CheckoutPage() {
                           value={formData.lastName}
                           onChange={handleInputChange}
                           required
+                          className="bg-white"
                         />
                       </div>
                     </div>
@@ -150,6 +153,7 @@ export default function CheckoutPage() {
                         value={formData.address}
                         onChange={handleInputChange}
                         required
+                        className="bg-white"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -161,6 +165,7 @@ export default function CheckoutPage() {
                           value={formData.city}
                           onChange={handleInputChange}
                           required
+                          className="bg-white"
                         />
                       </div>
                       <div>
@@ -171,6 +176,7 @@ export default function CheckoutPage() {
                           value={formData.state}
                           onChange={handleInputChange}
                           required
+                          className="bg-white"
                         />
                       </div>
                     </div>
@@ -182,6 +188,7 @@ export default function CheckoutPage() {
                         value={formData.zipCode}
                         onChange={handleInputChange}
                         required
+                        className="bg-white"
                       />
                     </div>
                   </CardContent>
@@ -194,7 +201,7 @@ export default function CheckoutPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <Card>
+                <Card className="bg-white border border-gray-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <CreditCard className="h-5 w-5" />
@@ -211,6 +218,7 @@ export default function CheckoutPage() {
                         value={formData.cardNumber}
                         onChange={handleInputChange}
                         required
+                        className="bg-white"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -223,6 +231,7 @@ export default function CheckoutPage() {
                           value={formData.expiryDate}
                           onChange={handleInputChange}
                           required
+                          className="bg-white"
                         />
                       </div>
                       <div>
@@ -234,6 +243,7 @@ export default function CheckoutPage() {
                           value={formData.cvv}
                           onChange={handleInputChange}
                           required
+                          className="bg-white"
                         />
                       </div>
                     </div>
@@ -245,6 +255,7 @@ export default function CheckoutPage() {
                         value={formData.nameOnCard}
                         onChange={handleInputChange}
                         required
+                        className="bg-white"
                       />
                     </div>
                   </CardContent>
@@ -258,7 +269,7 @@ export default function CheckoutPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Card className="sticky top-24">
+              <Card className="sticky top-24 bg-white border border-gray-200">
                 <CardHeader>
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
@@ -279,7 +290,7 @@ export default function CheckoutPage() {
                           <p className="text-xs text-gray-500">
                             {item.selectedColor} • {item.selectedSize} • Qty: {item.quantity}
                           </p>
-                          <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-semibold">PKR {(item.price * item.quantity).toLocaleString('en-PK')}</p>
                         </div>
                       </div>
                     ))}
@@ -290,7 +301,7 @@ export default function CheckoutPage() {
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
-                      <span>${totalPrice.toFixed(2)}</span>
+                      <span>PKR {totalPrice.toLocaleString('en-PK')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Shipping</span>
@@ -298,7 +309,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Tax</span>
-                      <span>${(totalPrice * 0.1).toFixed(2)}</span>
+                      <span>PKR {(totalPrice * 0.1).toLocaleString('en-PK')}</span>
                     </div>
                   </div>
 
@@ -306,7 +317,7 @@ export default function CheckoutPage() {
 
                   <div className="flex justify-between text-lg font-bold mb-6">
                     <span>Total</span>
-                    <span>${(totalPrice * 1.1).toFixed(2)}</span>
+                    <span>PKR {(totalPrice * 1.1).toLocaleString('en-PK')}</span>
                   </div>
 
                   <Button

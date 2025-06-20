@@ -45,7 +45,7 @@ export default function SalesChart() {
     },
     tooltip: {
       theme: 'dark',
-      y: { formatter: (val: number) => `$${val.toLocaleString()}` },
+      y: { formatter: (val: number) => `PKR ${val.toLocaleString()}` },
     },
     colors: ['#6366f1'],
   }), []);

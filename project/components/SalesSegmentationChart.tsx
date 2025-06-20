@@ -100,9 +100,9 @@ export default function SalesSegmentationChart() {
   }), []);
 
   const categories = [
-    { name: 'Men', percentage: 45, color: '#6366f1', revenue: '$20,354' },
-    { name: 'Women', percentage: 35, color: '#f59e0b', revenue: '$15,831' },
-    { name: 'Kids', percentage: 20, color: '#10b981', revenue: '$9,046' },
+    { name: 'Men', percentage: 45, color: '#6366f1', revenue: 'PKR 20,354' },
+    { name: 'Women', percentage: 35, color: '#f59e0b', revenue: 'PKR 15,831' },
+    { name: 'Kids', percentage: 20, color: '#10b981', revenue: 'PKR 9,046' },
   ];
 
   return (

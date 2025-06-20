@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthModal from './AuthModal';
 
 interface NavbarProps {
@@ -16,9 +17,14 @@ interface NavbarProps {
 }
 
 export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps) {
+  const router = useRouter();
   const { getTotalItems, toggleCart } = useStore();
   const { user, isAuthenticated, isAdmin, login, signup, logout } = useAuthStore();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const totalItems = getTotalItems();
   const pathname = usePathname();
 
@@ -30,13 +36,40 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
   const logoHoverOpacityClass = 'hover:opacity-70';
   const underlineColorClass = isAdminPage ? 'bg-white' : (isLandingPage ? 'bg-white' : 'bg-black');
 
+  // Handle scroll behavior for showing/hiding navbar and changing background
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Background change on scroll
+      if (currentScrollY > 50) {
+        setHasScrolled(true);
+      } else {
+        setHasScrolled(false);
+      }
+
+      // Show/hide on scroll
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsNavbarVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsNavbarVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   const handleLogin = (email: string, password: string) => {
     const success = login(email, password);
     if (success) {
       setIsAuthModalOpen(false);
-      if (isAdmin) {
-        // Redirect to admin dashboard
-        window.location.href = '/admin';
+      // Check if the credentials are admin credentials directly
+      if (email === 'Admin@Hoodease.com' && password === 'rootpass1') {
+        // Redirect to admin dashboard immediately
+        router.push('/admin');
       }
     } else {
       alert('Invalid credentials. Please try again.');
@@ -55,16 +88,25 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
   const handleLogout = () => {
     logout();
     if (isAdmin) {
-      window.location.href = '/';
+      router.push('/');
     }
+  };
+
+  const openAuthModal = (mode: 'login' | 'signup') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
   };
 
   return (
     <>
       <motion.nav 
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`${isStatic ? 'static w-full' : 'fixed top-0 left-0 right-0'} z-50`}
+        animate={{ 
+          opacity: 1, 
+          y: isStatic ? 0 : (isNavbarVisible ? 0 : -100)
+        }}
+        transition={{ duration: 0.3 }}
+        className={`${isStatic ? 'static w-full' : 'fixed top-0 left-0 right-0'} z-50 transition-colors duration-300 ${isLandingPage && !hasScrolled ? 'bg-transparent' : 'bg-white/95 backdrop-blur-sm border-b border-gray-200'}`}
       >
         <div className="container mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -158,7 +200,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
               <div className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
-                  onClick={() => setIsAuthModalOpen(true)}
+                  onClick={() => openAuthModal('login')}
                   className={`${textColorClass} ${hoverTextColorClass} hover:bg-transparent transition-colors duration-300 minimal-text text-sm`}
                 >
                   Login
@@ -166,7 +208,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsAuthModalOpen(true)}
+                  onClick={() => openAuthModal('signup')}
                   className={`bg-black text-white border-black transition-all duration-300 minimal-text text-sm`}
                   style={{
                     '--tw-bg-opacity': '1',
@@ -210,6 +252,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
         onClose={() => setIsAuthModalOpen(false)}
         onLogin={handleLogin}
         onSignup={handleSignup}
+        defaultMode={authModalMode}
       />
     </>
   );

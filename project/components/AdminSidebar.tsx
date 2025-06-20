@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Home, ShoppingBag, Users, BarChart2, Settings, LogOut, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -28,49 +29,64 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   return (
     <>
-      {/* Overlay for mobile */}
-      <div
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 lg:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        onClick={onClose}
-      />
-      <aside
-        className={`lg:sticky lg:top-0 lg:h-screen lg:z-40 flex flex-col w-64 bg-white border-r border-gray-200 py-8 px-4 space-y-2 shadow-lg transition-transform duration-300
-          fixed left-0 top-0 z-50 h-screen
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static`}
-      >
-        {/* Close button for mobile */}
-        <button
-          className="absolute top-4 right-4 lg:hidden text-gray-500 hover:text-black"
+      {/* Overlay */}
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={onClose}
-        >
-          <X className="h-6 w-6" />
-        </button>
-        <div className="mb-8 flex items-center gap-2 px-2">
-          <span className="text-2xl font-bold tracking-tight text-black">HoodEase</span>
-        </div>
-        <nav className="flex-1 space-y-1">
-          {navLinks.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200
-                ${pathname === href ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        />
+      )}
+
+      {/* Sidebar */}
+      <motion.aside
+        initial={{ x: '-100%' }}
+        animate={{ x: isOpen ? '0%' : '-100%' }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="fixed top-0 left-0 h-screen w-64 bg-white shadow-lg z-50"
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex justify-between items-center p-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-black">HoodEase</h2>
+            <button
+              className="text-gray-500 hover:text-black transition-colors"
               onClick={onClose}
             >
-              <Icon className="h-5 w-5" />
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 w-full mt-8 bg-gray-100 text-gray-700 hover:bg-black hover:text-white"
-        >
-          <LogOut className="h-5 w-5" />
-          Logout
-        </button>
-      </aside>
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-2">
+            {navLinks.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200
+                  ${pathname === href ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                onClick={onClose}
+              >
+                <Icon className="h-5 w-5" />
+                {label}
+              </Link>
+            ))}
+          </nav>
+          
+          {/* Footer */}
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 w-full bg-gray-100 text-gray-700 hover:bg-black hover:text-white"
+            >
+              <LogOut className="h-5 w-5" />
+              Logout
+            </button>
+          </div>
+        </div>
+      </motion.aside>
     </>
   );
 } 
