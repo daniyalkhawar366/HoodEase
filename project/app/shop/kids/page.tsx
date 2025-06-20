@@ -149,3 +149,5 @@ export default function KidsShopPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-static';

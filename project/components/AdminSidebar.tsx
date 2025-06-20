@@ -9,7 +9,6 @@ const navLinks = [
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
   { href: '/admin/products', label: 'Products', icon: BarChart2 },
   { href: '/admin/customers', label: 'Customers', icon: Users },
-  { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 

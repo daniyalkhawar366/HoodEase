@@ -96,3 +96,39 @@ export const useStore = create<StoreState>()(
     }
   )
 );
+
+// Global admin settings store
+interface SettingsState {
+  adminEmail: string;
+  phone: string;
+  supportEmail: string;
+  showEmail: boolean;
+  showPhone: boolean;
+  showSupport: boolean;
+  currency: string;
+  language: string;
+  timezone: string;
+  maintenance: boolean;
+  theme: 'dark' | 'light';
+  setSettings: (settings: Partial<Omit<SettingsState, 'setSettings'>>) => void;
+}
+
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set, get) => ({
+      adminEmail: 'admin@hoodease.com',
+      phone: '+92 300 1234567',
+      supportEmail: 'support@hoodease.com',
+      showEmail: true,
+      showPhone: false,
+      showSupport: true,
+      currency: 'PKR',
+      language: 'English',
+      timezone: 'Asia/Karachi',
+      maintenance: false,
+      theme: 'dark',
+      setSettings: (settings) => set({ ...get(), ...settings }),
+    }),
+    { name: 'hoodease-admin-settings' }
+  )
+);

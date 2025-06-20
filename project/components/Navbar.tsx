@@ -171,22 +171,11 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
           </div>
 
           <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
+            {isAuthenticated && !isAdmin ? (
               <div className="flex items-center space-x-3">
                 <span className={`${textColorClass} text-sm font-medium`}>
                   Hi, {user?.firstName}
                 </span>
-                {isAdmin && (
-                  <Link href="/admin">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className={`bg-black text-white border-black hover:bg-white hover:text-black transition-all duration-300`}
-                    >
-                      Admin
-                    </Button>
-                  </Link>
-                )}
                 <Button
                   variant="ghost"
                   size="icon"

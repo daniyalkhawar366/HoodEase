@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-static';
+
 import { motion } from 'framer-motion';
 import { CheckCircle, Package, Truck, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';

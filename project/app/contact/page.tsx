@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-static';
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -8,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Phone, Mail, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSettingsStore } from '@/store/useStore';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,6 +20,8 @@ export default function ContactPage() {
     phone: '',
     message: '',
   });
+
+  const { phone, supportEmail } = useSettingsStore();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -126,11 +131,11 @@ export default function ContactPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-center space-x-3">
               <Phone className="h-5 w-5 text-gray-700" />
-              <p className="text-black">+1234567894</p>
+              <p className="text-black">{phone}</p>
             </div>
             <div className="flex items-center justify-center space-x-3">
               <Mail className="h-5 w-5 text-gray-700" />
-              <p className="text-black">cont@gmail.com</p>
+              <p className="text-black">{supportEmail}</p>
             </div>
             <div className="flex items-center justify-center space-x-3">
               <MapPin className="h-5 w-5 text-gray-700" />

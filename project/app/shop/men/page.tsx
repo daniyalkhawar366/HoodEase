@@ -171,3 +171,5 @@ export default function MenShopPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-static';

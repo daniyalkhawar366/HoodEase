@@ -155,3 +155,5 @@ export default function WomenShopPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-static';

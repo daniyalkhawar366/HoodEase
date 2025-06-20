@@ -8,6 +8,9 @@ import HorizontalScroll from '@/components/HorizontalScroll';
 import { motion } from 'framer-motion';
 import { ArrowRight, Instagram, Twitter, Facebook } from 'lucide-react';
 import { useStackScroll } from '@/hooks/useStackScroll';
+import Footer from '@/components/Footer';
+
+export const dynamic = 'force-static';
 
 export default function Home() {
   useStackScroll(); // Initialize stack scroll effect
@@ -133,95 +136,7 @@ export default function Home() {
       </FullSection>
 
       {/* Footer Section */}
-      <FullSection className="bg-text" id="footer">
-        <div className="container mx-auto px-6 py-20 w-full">
-          <div className="grid md:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-warm-cream"
-            >
-              <h2 className="text-4xl md:text-6xl font-bold mb-8 minimal-text">
-                STAY CONNECTED
-              </h2>
-              <p className="text-lg mb-12 text-warm-cream/80 font-light">
-                Be the first to know about new drops, exclusive offers, and style inspiration.
-              </p>
-              
-              <div className="flex space-x-4 mb-12">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-warm-cream hover:text-warm-light h-12 w-12 hover:bg-transparent transition-colors duration-300"
-                >
-                  <Instagram className="h-6 w-6" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-warm-cream hover:text-warm-light h-12 w-12 hover:bg-transparent transition-colors duration-300"
-                >
-                  <Twitter className="h-6 w-6" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-warm-cream hover:text-warm-light h-12 w-12 hover:bg-transparent transition-colors duration-300"
-                >
-                  <Facebook className="h-6 w-6" />
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-12 text-sm">
-                <div>
-                  <h3 className="font-bold mb-6 minimal-text text-warm-light">SHOP</h3>
-                  <div className="space-y-3 text-warm-cream/60">
-                    <Link href="/shop/men" className="block hover:text-warm-light transition-colors minimal-text">MEN'S</Link>
-                    <Link href="/shop/women" className="block hover:text-warm-light transition-colors minimal-text">WOMEN'S</Link>
-                    <Link href="/shop/kids" className="block hover:text-warm-light transition-colors minimal-text">KIDS'</Link>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-bold mb-6 minimal-text text-warm-light">SUPPORT</h3>
-                  <div className="space-y-3 text-warm-cream/60">
-                    <Link href="/about" className="block hover:text-warm-light transition-colors minimal-text">ABOUT</Link>
-                    <Link href="/contact" className="block hover:text-warm-light transition-colors minimal-text">CONTACT</Link>
-                    <Link href="#" className="block hover:text-warm-light transition-colors minimal-text">RETURNS</Link>
-                    <Link href="#" className="block hover:text-warm-light transition-colors minimal-text">SIZE GUIDE</Link>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="glass-effect rounded-lg p-8 border border-black/20"
-            >
-              <h3 className="text-2xl font-bold text-black mb-6 minimal-text">NEWSLETTER</h3>
-              <p className="text-black/80 mb-6 font-light">
-                Get 10% off your first order when you sign up for our newsletter.
-              </p>
-              <div className="space-y-4">
-                <Input
-                  type="email"
-                  placeholder="ENTER YOUR EMAIL"
-                  className="bg-gray-100 border-gray-300 text-black placeholder:text-gray-500 h-12 minimal-text focus:border-black focus:ring-black"
-                />
-                <Button className="w-full bg-black text-white hover:bg-gray-800 hover:text-white h-12 font-bold minimal-text transition-all duration-300">
-                  SUBSCRIBE
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-          
-          <div className="border-t border-black/20 mt-20 pt-8 text-center text-black/60">
-            <p className="minimal-text text-sm">&copy; 2024 HOODEASE. ALL RIGHTS RESERVED.</p>
-          </div>
-        </div>
-      </FullSection>
+      <Footer />
     </div>
   );
 }

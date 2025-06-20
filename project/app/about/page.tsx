@@ -5,6 +5,8 @@ import { Heart, Globe, Users, Award, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+export const dynamic = 'force-static';
+
 export default function AboutPage() {
   const values = [
     {
