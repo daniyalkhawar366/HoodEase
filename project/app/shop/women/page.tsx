@@ -2,13 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { productsWomen } from '@/lib/products-women';
 import ProductCard from '@/components/ProductCard';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
-const menCategories = [
+const womenCategories = [
   {
     name: 'Casual Shirts',
     image: 'https://res.cloudinary.com/dun1zalow/image/upload/v1750234809/casualw_difeb8.webp'
@@ -36,12 +35,35 @@ const menCategories = [
 ];
 
 export default function WomenShopPage() {
-  const products = productsWomen;
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<string>('alphabetical');
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Fetch products from database
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/products?category=women');
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        const data = await response.json();
+        setProducts(data.products || []);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts = activeSubcategory
     ? products.filter((p) => p.subcategory === activeSubcategory)
@@ -66,9 +88,9 @@ export default function WomenShopPage() {
     return () => window.removeEventListener('resetMenFilter', handler);
   }, []);
 
-  // Reset filter when navigating to /shop/men
+  // Reset filter when navigating to /shop/women
   useEffect(() => {
-    if (pathname === '/shop/men') {
+    if (pathname === '/shop/women') {
       setActiveSubcategory(null);
     }
   }, [pathname]);
@@ -104,7 +126,7 @@ export default function WomenShopPage() {
 
         {/* Category Circles Row */}
         <div className="flex justify-center space-x-8 px-8 pb-6 mb-2">
-          {menCategories.map((cat) => (
+          {womenCategories.map((cat) => (
             <div
               key={cat.name}
               className={`flex flex-col items-center group cursor-pointer transition-transform duration-300 ${activeSubcategory === cat.name ? 'scale-110' : ''}`}
@@ -141,19 +163,37 @@ export default function WomenShopPage() {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 transition-all duration-500">
-          {sortedProducts.map((product, index) => (
-            <div key={product.id} className="transition-opacity duration-500 opacity-100">
-              <ProductCard product={product} index={index} />
-              <div className="mt-2 text-xs text-gray-500 font-semibold text-center" style={{ fontFamily: 'Poppins, Inter, sans-serif' }}>
-                {product.subcategory}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
+                <div className="bg-gray-200 h-4 rounded mb-2"></div>
+                <div className="bg-gray-200 h-4 rounded w-1/2"></div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 transition-all duration-500">
+            {sortedProducts.map((product, index) => (
+              <div key={product._id || product.id} className="transition-opacity duration-500 opacity-100">
+                <ProductCard product={product} index={index} />
+                <div className="mt-2 text-xs text-gray-500 font-semibold text-center" style={{ fontFamily: 'Poppins, Inter, sans-serif' }}>
+                  {product.subcategory}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {!loading && sortedProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No products found.</p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';

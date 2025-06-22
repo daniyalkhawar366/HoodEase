@@ -20,11 +20,7 @@ export default function ClientLayoutWrapper({
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const isStaticNavbar = pathname === '/shop/men' || 
-                        pathname === '/shop/women' || 
-                        pathname === '/shop/kids' || 
-                        pathname === '/contact' || 
-                        pathname === '/cart' ||
+  const isStaticNavbar = pathname === '/cart' ||
                         pathname.startsWith('/product/');
   const isAdminRoute = pathname.startsWith('/admin');
 

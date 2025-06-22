@@ -29,13 +29,23 @@ export async function GET(request: NextRequest) {
       query.userId = userId;
     }
 
+    // Fix status filtering to handle case-insensitive matching
     if (type === 'active') {
-      query.status = { $in: [/processing/i, /shipped/i, /pending/i] };
+      // Active orders: Processing, Shipped, Pending
+      query.status = { 
+        $in: ['Processing', 'Shipped', 'Pending', 'processing', 'shipped', 'pending'] 
+      };
     } else if (type === 'past') {
-      query.status = { $in: [/delivered/i, /cancelled/i] };
+      // Past orders: Delivered, Cancelled
+      query.status = { 
+        $in: ['Delivered', 'Cancelled', 'delivered', 'cancelled'] 
+      };
     }
 
-    const orders = await Order.find(query).sort({ createdAt: -1 });
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .populate('userId', 'firstName lastName email'); // Populate user details
+
     return NextResponse.json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);

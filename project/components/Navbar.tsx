@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import AuthModal from './AuthModal';
+import { toast } from 'sonner';
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -77,7 +78,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
       }
       return true;
     } else {
-      alert('Invalid credentials. Please try again.');
+      toast.error('Invalid credentials. Please try again.');
       return false;
     }
   };
@@ -88,11 +89,11 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
       if (success) {
         return true;
       } else {
-        alert('Signup failed. Please try again.');
+        toast.error('Signup failed. Please try again.');
         return false;
       }
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message);
       return false;
     }
   };

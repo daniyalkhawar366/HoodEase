@@ -20,7 +20,7 @@ export default function OrderHistoryPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/orders');
+      const response = await fetch('/api/orders?type=past');
       if (!response.ok) {
         throw new Error('Failed to fetch orders');
       }
@@ -74,6 +74,26 @@ export default function OrderHistoryPage() {
     }
   };
 
+  const getCustomerName = (order: any) => {
+    if (order.customerName) {
+      return order.customerName;
+    }
+    if (order.userId && typeof order.userId === 'object') {
+      return `${order.userId.firstName || ''} ${order.userId.lastName || ''}`.trim();
+    }
+    return 'N/A';
+  };
+
+  const getCustomerEmail = (order: any) => {
+    if (order.email) {
+      return order.email;
+    }
+    if (order.userId && typeof order.userId === 'object') {
+      return order.userId.email || 'N/A';
+    }
+    return 'N/A';
+  };
+
   return (
     <div className={`min-h-screen bg-[#111215] p-4 md:p-8 ${inter.className}`}>
       <div className="mb-8">
@@ -86,6 +106,7 @@ export default function OrderHistoryPage() {
             <tr>
               <th className="px-6 py-4 text-left font-semibold text-gray-300">Order ID</th>
               <th className="px-6 py-4 text-left font-semibold text-gray-300">Customer</th>
+              <th className="px-6 py-4 text-left font-semibold text-gray-300">Email</th>
               <th className="px-6 py-4 text-left font-semibold text-gray-300">Date</th>
               <th className="px-6 py-4 text-left font-semibold text-gray-300">Total</th>
               <th className="px-6 py-4 text-left font-semibold text-gray-300">Status</th>
@@ -95,13 +116,13 @@ export default function OrderHistoryPage() {
           <tbody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                <TableCell colSpan={7} className="text-center text-gray-400 py-8">
                   Loading order history...
                 </TableCell>
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                <TableCell colSpan={7} className="text-center text-gray-400 py-8">
                   No past orders found.
                 </TableCell>
               </TableRow>
@@ -112,9 +133,10 @@ export default function OrderHistoryPage() {
                   className="border-b border-gray-800 hover:bg-[#23242a] transition-colors duration-150 group"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-white font-mono">{order.orderId || order._id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-200">{order.customerName || order.userEmail || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-200">{getCustomerName(order)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">{getCustomerEmail(order)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-400">
-                    {new Date(order.createdAt || order.date).toLocaleDateString()}
+                    {new Date(order.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-200">
                     PKR {order.totalAmount.toLocaleString()}

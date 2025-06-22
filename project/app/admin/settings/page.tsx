@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const {
@@ -20,11 +20,11 @@ export default function SettingsPage() {
   // Save handlers (simulate async save)
   const handleSaveContact = () => {
     setSettings({ adminEmail, phone, supportEmail });
-    toast({ title: 'Contact Info Saved', description: 'Contact information updated successfully.', variant: 'default' });
+    toast.success('Contact information updated successfully.');
   };
   const handleSaveDisplay = () => {
     setSettings({ showEmail, showPhone, showSupport });
-    toast({ title: 'Display Settings Saved', description: 'User page display settings updated.', variant: 'default' });
+    toast.success('User page display settings updated.');
   };
 
   return (

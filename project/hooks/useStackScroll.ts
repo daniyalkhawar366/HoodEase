@@ -15,6 +15,16 @@ export const useStackScroll = () => {
       
       if (isScrolling) return;
       
+      // Prevent scrolling past the last section
+      if (e.deltaY > 0 && currentSection >= totalSections - 1) {
+        return;
+      }
+      
+      // Prevent scrolling before the first section
+      if (e.deltaY < 0 && currentSection <= 0) {
+        return;
+      }
+      
       setIsScrolling(true);
       
       if (e.deltaY > 0 && currentSection < totalSections - 1) {
@@ -30,6 +40,18 @@ export const useStackScroll = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isScrolling) return;
+      
+      // Prevent scrolling past the last section
+      if (e.key === 'ArrowDown' && currentSection >= totalSections - 1) {
+        e.preventDefault();
+        return;
+      }
+      
+      // Prevent scrolling before the first section
+      if (e.key === 'ArrowUp' && currentSection <= 0) {
+        e.preventDefault();
+        return;
+      }
       
       if (e.key === 'ArrowDown' && currentSection < totalSections - 1) {
         e.preventDefault();

@@ -59,6 +59,19 @@
   #__next {
     height: 100%;
   }
+
+  /* Only apply overflow hidden to home page */
+  body.home-page {
+    overflow: hidden;
+  }
+  
+  html.home-page {
+    overflow: hidden;
+  }
+  
+  #__next.home-page {
+    overflow: hidden;
+  }
 }
 
 @layer components {
@@ -133,22 +146,42 @@
   }
 }
 
-/* Custom scrollbar */
+/* Sleek minimalistic scrollbar for non-home pages */
 ::-webkit-scrollbar {
-  width: 0px;
+  width: 8px;
   background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FAF6F0;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Hide scrollbar for home page */
+.home-page ::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.home-page ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.home-page ::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 0px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.home-page ::-webkit-scrollbar-thumb:hover {
   background: transparent;
 }
 

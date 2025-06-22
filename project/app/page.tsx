@@ -8,12 +8,30 @@ import HorizontalScroll from '@/components/HorizontalScroll';
 import { motion } from 'framer-motion';
 import { ArrowRight, Instagram, Twitter, Facebook } from 'lucide-react';
 import { useStackScroll } from '@/hooks/useStackScroll';
-import Footer from '@/components/Footer';
+import { useEffect } from 'react';
 
 export const dynamic = 'force-static';
 
 export default function Home() {
   useStackScroll(); // Initialize stack scroll effect
+
+  // Add home-page class to body for CSS targeting
+  useEffect(() => {
+    document.body.classList.add('home-page');
+    document.documentElement.classList.add('home-page');
+    if (document.getElementById('__next')) {
+      document.getElementById('__next')?.classList.add('home-page');
+    }
+
+    // Cleanup function to remove classes when component unmounts
+    return () => {
+      document.body.classList.remove('home-page');
+      document.documentElement.classList.remove('home-page');
+      if (document.getElementById('__next')) {
+        document.getElementById('__next')?.classList.remove('home-page');
+      }
+    };
+  }, []);
 
   const heroImages = [
     'https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg',
@@ -134,9 +152,6 @@ export default function Home() {
           </Link>
         </div>
       </FullSection>
-
-      {/* Footer Section */}
-      <Footer />
     </div>
   );
 }
