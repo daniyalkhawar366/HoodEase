@@ -14,6 +14,7 @@ import { Inter } from 'next/font/google';
 import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 // Combine all products and add random stock
@@ -29,9 +30,10 @@ const allProducts = [...productsMen, ...productsWomen, ...productsKids].map(p =>
 });
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<any[]>(allProducts);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editProduct, setEditProduct] = useState<any>(null);
-  const [editFields, setEditFields] = useState({ price: '', stock: '', status: '' });
+  const [editFields, setEditFields] = useState({ price: '', stock: '' });
   const [modalOpen, setModalOpen] = useState(false);
   const leftEdgeRef = useRef(null);
 
@@ -46,14 +48,30 @@ export default function ProductsPage() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const statusOptions = ['In Stock', 'Low Stock', 'Out of Stock'];
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/products?limit=100');
+      if (!response.ok) throw new Error('Failed to fetch products');
+      const data = await response.json();
+      setProducts(data.products);
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not load products.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleEditClick = (product: any) => {
     setEditProduct(product);
     setEditFields({
       price: product.price.toString(),
-      stock: product.stock.toString(),
-      status: product.status,
+      stock: product.stock?.toString() || '0',
     });
     setModalOpen(true);
   };
@@ -62,29 +80,54 @@ export default function ProductsPage() {
     setEditFields((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editProduct) return;
-    setProducts((prev) =>
-      prev.map((p: any) =>
-        p.id === editProduct.id && p.category === editProduct.category
-          ? { ...p, price: Number(editFields.price), stock: Number(editFields.stock), status: editFields.status }
-          : p
-      )
-    );
-    setModalOpen(false);
-    setEditProduct(null);
+
+    try {
+      const response = await fetch(`/api/products/${editProduct.slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          price: Number(editFields.price),
+          stock: Number(editFields.stock),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update product');
+      }
+
+      const updatedProduct = await response.json();
+
+      setProducts((prev) =>
+        prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p))
+      );
+      
+      toast.success(`Product "${updatedProduct.name}" updated successfully.`);
+      setModalOpen(false);
+      setEditProduct(null);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to update product.');
+    }
+  };
+
+  const getStatus = (stock: number) => {
+    if (stock === 0) return 'Out of Stock';
+    if (stock < 20) return 'Low Stock';
+    return 'In Stock';
   };
 
   const getStatusClasses = (status: string) => {
     switch (status) {
       case 'In Stock':
-        return 'bg-white text-green-500 hover:bg-gray-100';
+        return 'bg-green-900 text-green-400';
       case 'Out of Stock':
-        return 'bg-white text-red-500 hover:bg-gray-100';
+        return 'bg-red-900 text-red-400';
       case 'Low Stock':
-        return 'bg-white text-yellow-500 hover:bg-gray-100';
+        return 'bg-yellow-900 text-yellow-300';
       default:
-        return 'bg-gray-700 text-white';
+        return 'bg-gray-800 text-gray-300';
     }
   };
 
@@ -111,45 +154,49 @@ export default function ProductsPage() {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr
-                key={`${product.category}-${product.id}`}
-                className="border-b border-gray-800 hover:bg-[#23242a] transition-colors duration-150 group"
-              >
-                <td className="px-6 py-4 flex items-center gap-4">
-                  <Image src={product.image} alt={product.name} width={40} height={40} className="rounded-md object-cover shadow-sm" />
-                  <span className="font-medium text-white">{product.name}</span>
-                </td>
-                <td className="px-6 py-4 text-gray-200">PKR {product.price.toLocaleString()}</td>
-                <td className="px-6 py-4 text-gray-200">{product.stock}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold shadow-sm
-                      ${product.status === 'In Stock' ? 'bg-green-900 text-green-400' :
-                        product.status === 'Out of Stock' ? 'bg-red-900 text-red-400' :
-                        product.status === 'Low Stock' ? 'bg-yellow-900 text-yellow-300' :
-                        'bg-gray-800 text-gray-300'}
-                    `}
+            {loading ? (
+              <tr><td colSpan={5} className="text-center py-8 text-gray-400">Loading products...</td></tr>
+            ) : products.length === 0 ? (
+              <tr><td colSpan={5} className="text-center py-8 text-gray-400">No products found.</td></tr>
+            ) : (
+              products.map((product) => {
+                const status = getStatus(product.stock || 0);
+                return (
+                  <tr
+                    key={product._id}
+                    className="border-b border-gray-800 hover:bg-[#23242a] transition-colors duration-150 group"
                   >
-                    {product.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="p-2 rounded-lg hover:bg-[#23242a] transition-colors">
-                        <MoreVertical className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white min-w-[160px]">
-                      <DropdownMenuItem onClick={() => handleEditClick(product)}>
-                        Edit
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
+                    <td className="px-6 py-4 flex items-center gap-4">
+                      <Image src={product.image} alt={product.name} width={40} height={40} className="rounded-md object-cover shadow-sm" />
+                      <span className="font-medium text-white">{product.name}</span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-200">PKR {product.price.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-gray-200">{product.stock || 0}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-block rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getStatusClasses(status)}`}
+                      >
+                        {status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="p-2 rounded-lg hover:bg-[#23242a] transition-colors">
+                            <MoreVertical className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white min-w-[160px]">
+                          <DropdownMenuItem onClick={() => handleEditClick(product)}>
+                            Edit
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -177,18 +224,6 @@ export default function ProductsPage() {
                 onChange={e => handleFieldChange('stock', e.target.value)}
                 className="bg-gray-800 border-gray-600 text-white"
               />
-            </div>
-            <div>
-              <label className="block text-gray-300 mb-1">Status</label>
-              <select
-                value={editFields.status}
-                onChange={e => handleFieldChange('status', e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white rounded-md w-full p-2"
-              >
-                {statusOptions.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
             </div>
           </div>
           <DialogFooter>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import ImageCarousel from '@/components/ImageCarousel';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
@@ -12,17 +13,29 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, Heart, Share2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function ProductDetailsClient({ product, relatedProducts }: { product: any, relatedProducts: any[] }) {
+interface ProductDetailsClientProps {
+  product: any;
+  relatedProducts: any[];
+}
+
+export default function ProductDetailsClient({ product, relatedProducts }: ProductDetailsClientProps) {
   const { addToCart } = useStore();
-  const [selectedColor, setSelectedColor] = useState<string>('');
-  const [selectedSize, setSelectedSize] = useState<string>('');
+  const { isAuthenticated, openAuthModal } = useAuthStore();
+  const [selectedColor, setSelectedColor] = useState<string>(product.colors[0]);
+  const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0]);
   const [quantity, setQuantity] = useState(1);
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    
     if (!selectedColor || !selectedSize) {
       toast.error('Please select both color and size');
       return;
     }
+    
     addToCart(product, selectedColor, selectedSize, quantity);
     toast.success('Added to cart!');
   };

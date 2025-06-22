@@ -1,13 +1,16 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Home, ShoppingBag, Users, BarChart2, Settings, LogOut, X } from 'lucide-react';
+import { Home, ShoppingBag, Package, Users, BarChart2, Settings, LogOut, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const navLinks = [
   { href: '/admin', label: 'Dashboard', icon: Home },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
-  { href: '/admin/products', label: 'Products', icon: BarChart2 },
+  { href: '/admin/order-history', label: 'Order History', icon: Package },
+  { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/customers', label: 'Customers', icon: Users },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
@@ -57,7 +60,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               <X className="h-6 w-6" />
             </button>
           </div>
-          
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
             {navLinks.map(({ href, label, icon: Icon }) => (
@@ -73,7 +75,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               </Link>
             ))}
           </nav>
-          
+
           {/* Footer */}
           <div className="p-4 border-t border-gray-200">
             <button

@@ -14,14 +14,6 @@ interface ShopPageProps {
   params: Promise<{ category: string }>;
 }
 
-export async function generateStaticParams() {
-  return [
-    { category: 'men' },
-    { category: 'women' },
-    { category: 'kids' }
-  ];
-}
-
 export default function ShopPage({ params }: ShopPageProps) {
   const resolvedParams = use(params);
   const category = resolvedParams.category as 'men' | 'women' | 'kids';

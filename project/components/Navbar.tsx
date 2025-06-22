@@ -19,9 +19,15 @@ interface NavbarProps {
 export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps) {
   const router = useRouter();
   const { getTotalItems, toggleCart } = useStore();
-  const { user, isAuthenticated, isAdmin, login, signup, logout } = useAuthStore();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const { 
+    user, 
+    isAuthenticated, 
+    isAdmin, 
+    login, 
+    signup, 
+    logout, 
+    openAuthModal 
+  } = useAuthStore();
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -62,26 +68,32 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  const handleLogin = (email: string, password: string) => {
-    const success = login(email, password);
+  const handleLogin = async (email: string, password: string) => {
+    const success = await login(email, password);
     if (success) {
-      setIsAuthModalOpen(false);
-      // Check if the credentials are admin credentials directly
-      if (email === 'Admin@Hoodease.com' && password === 'rootpass1') {
-        // Redirect to admin dashboard immediately
+      // Admin check is now handled within the store, redirect if isAdmin is true
+      if (email === 'Admin@Hoodease.com') {
         router.push('/admin');
       }
+      return true;
     } else {
       alert('Invalid credentials. Please try again.');
+      return false;
     }
   };
 
-  const handleSignup = (userData: any) => {
+  const handleSignup = async (userData: any) => {
     try {
-      signup(userData);
-      setIsAuthModalOpen(false);
+      const success = await signup(userData);
+      if (success) {
+        return true;
+      } else {
+        alert('Signup failed. Please try again.');
+        return false;
+      }
     } catch (error: any) {
       alert(error.message);
+      return false;
     }
   };
 
@@ -92,9 +104,12 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
     }
   };
 
-  const openAuthModal = (mode: 'login' | 'signup') => {
-    setAuthModalMode(mode);
-    setIsAuthModalOpen(true);
+  const handleCartClick = () => {
+    if (isAuthenticated) {
+      toggleCart();
+    } else {
+      openAuthModal('login');
+    }
   };
 
   return (
@@ -220,7 +235,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleCart}
+              onClick={handleCartClick}
               className={`relative ${textColorClass} ${hoverTextColorClass} hover:bg-transparent h-10 w-10 transition-colors duration-300`}
             >
               <ShoppingCart className="h-5 w-5" />
@@ -237,11 +252,8 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
       </motion.nav>
 
       <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
         onLogin={handleLogin}
         onSignup={handleSignup}
-        defaultMode={authModalMode}
       />
     </>
   );

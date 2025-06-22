@@ -6,30 +6,58 @@ import { MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Inter } from 'next/font/google';
-import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState([
-    { name: 'Ali Khan', email: 'ali.khan@example.com', totalSpent: 'PKR 25,450', joined: '2023-01-15', avatar: '/images/avatars/01.png', suspended: false },
-    { name: 'Fatima Ahmed', email: 'fatima.ahmed@example.com', totalSpent: 'PKR 18,200', joined: '2023-02-20', avatar: '/images/avatars/02.png', suspended: false },
-    { name: 'Zainab Bibi', email: 'zainab.bibi@example.com', totalSpent: 'PKR 32,000', joined: '2022-11-30', avatar: '/images/avatars/03.png', suspended: false },
-    { name: 'Bilal Chaudhry', email: 'bilal.chaudhry@example.com', totalSpent: 'PKR 7,500', joined: '2023-03-10', avatar: '/images/avatars/04.png', suspended: false },
-    { name: 'Sana Iqbal', email: 'sana.iqbal@example.com', totalSpent: 'PKR 45,900', joined: '2022-09-05', avatar: '/images/avatars/05.png', suspended: false },
-  ]);
-
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const handleSuspend = (email: string) => {
-    setCustomers(prev => prev.map(c => c.email === email ? { ...c, suspended: true } : c));
-    toast({ title: 'Account Suspended', description: 'The customer account has been suspended.', variant: 'default' });
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/users');
+      if (!response.ok) {
+        throw new Error('Failed to fetch customers');
+      }
+      const data = await response.json();
+      setCustomers(data.map((c: any) => ({ ...c, totalSpent: Math.floor(Math.random() * 50000) }))); // Add random spend for demo
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not load customers.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReinstate = (email: string) => {
-    setCustomers(prev => prev.map(c => c.email === email ? { ...c, suspended: false } : c));
-    toast({ title: 'Account Reinstated', description: 'The customer account is now active.', variant: 'default' });
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const handleToggleSuspend = async (customer: any) => {
+    const isSuspended = !customer.isSuspended;
+    try {
+      const response = await fetch(`/api/users/${customer._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isSuspended }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      const updatedCustomer = await response.json();
+      setCustomers(prev => prev.map(c => c._id === customer._id ? updatedCustomer : c));
+      toast.success(isSuspended ? 'Account suspended.' : 'Account reinstated.');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to update customer status.');
+    }
   };
 
   const handleViewProfile = (email: string) => {
@@ -54,55 +82,50 @@ export default function CustomersPage() {
             </tr>
           </thead>
           <tbody>
-            {customers.map((customer) => (
-              <tr
-                key={customer.email}
-                className={`border-b border-gray-800 hover:bg-[#23242a] transition-colors duration-150 group ${customer.suspended ? 'opacity-60' : ''}`}
-              >
-                <td className="px-6 py-4 flex items-center gap-4">
-                  <Avatar>
-                    <AvatarImage src={customer.avatar} />
-                    <AvatarFallback className="bg-gray-700 text-white font-semibold">
-                      {customer.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium text-white">{customer.name}</span>
-                  {customer.suspended && <span className="ml-2 px-2 py-0.5 rounded-full bg-red-700 text-xs text-white">Suspended</span>}
-                </td>
-                <td className="px-6 py-4 text-gray-200">{customer.email}</td>
-                <td className="px-6 py-4 text-gray-200">{customer.totalSpent}</td>
-                <td className="px-6 py-4 text-gray-400">{customer.joined}</td>
-                <td className="px-6 py-4 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="p-2 rounded-lg hover:bg-[#23242a] transition-colors">
-                        <MoreVertical className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white min-w-[160px]">
-                      <DropdownMenuItem onClick={() => handleViewProfile(customer.email)}>
-                        View Profile
-                      </DropdownMenuItem>
-                      {customer.suspended ? (
-                        <DropdownMenuItem
-                          onClick={() => handleReinstate(customer.email)}
-                          className="text-green-500"
-                        >
-                          Reinstate Account
+            {loading ? (
+              <tr><td colSpan={5} className="text-center py-8 text-gray-400">Loading customers...</td></tr>
+            ) : (
+              customers.map((customer) => (
+                <tr
+                  key={customer._id}
+                  className={`border-b border-gray-800 hover:bg-[#23242a] transition-colors duration-150 group ${customer.isSuspended ? 'opacity-60' : ''}`}
+                >
+                  <td className="px-6 py-4 flex items-center gap-4">
+                    <Avatar>
+                      <AvatarImage src={customer.avatar || ''} />
+                      <AvatarFallback className="bg-gray-700 text-white font-semibold">
+                        {customer.firstName?.[0]}{customer.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium text-white">{customer.firstName} {customer.lastName}</span>
+                    {customer.isSuspended && <span className="ml-2 px-2 py-0.5 rounded-full bg-red-700 text-xs text-white">Suspended</span>}
+                  </td>
+                  <td className="px-6 py-4 text-gray-200">{customer.email}</td>
+                  <td className="px-6 py-4 text-gray-200">PKR {customer.totalSpent.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-gray-400">{new Date(customer.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="p-2 rounded-lg hover:bg-[#23242a] transition-colors">
+                          <MoreVertical className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white min-w-[160px]">
+                        <DropdownMenuItem onClick={() => handleViewProfile(customer.email)}>
+                          View Profile
                         </DropdownMenuItem>
-                      ) : (
                         <DropdownMenuItem
-                          onClick={() => handleSuspend(customer.email)}
-                          className="text-red-500"
+                          onClick={() => handleToggleSuspend(customer)}
+                          className={customer.isSuspended ? "text-green-500" : "text-red-500"}
                         >
-                          Suspend Account
+                          {customer.isSuspended ? 'Reinstate Account' : 'Suspend Account'}
                         </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

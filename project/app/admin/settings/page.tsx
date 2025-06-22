@@ -29,7 +29,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8 flex flex-col items-center justify-center min-h-[80vh]">
-      <div>
+      <div className="text-center">
         <h1 className="text-3xl font-bold text-white">Settings</h1>
         <p className="text-gray-400">Manage your store's settings and preferences.</p>
       </div>

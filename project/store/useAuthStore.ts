@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { api } from '@/lib/api';
 
 interface User {
   firstName: string;
@@ -11,17 +12,18 @@ interface User {
   dateOfBirth: string;
 }
 
-interface StoredUser extends User {
-  password: string;
-}
-
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string) => boolean;
-  signup: (userData: StoredUser) => void;
+  isAuthModalOpen: boolean;
+  authModalMode: 'login' | 'signup' | 'forgot-password' | 'verification-sent';
+  login: (email: string, password: string) => Promise<any>;
+  signup: (userData: any) => Promise<any>;
   logout: () => void;
+  openAuthModal: (mode: 'login' | 'signup') => void;
+  closeAuthModal: () => void;
+  setAuthModalMode: (mode: 'login' | 'signup' | 'forgot-password' | 'verification-sent') => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,62 +32,37 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isAdmin: false,
+      isAuthModalOpen: false,
+      authModalMode: 'login',
 
-      login: (email: string, password: string) => {
-        // Check for admin credentials
-        if (email === 'Admin@Hoodease.com' && password === 'rootpass1') {
+      login: async (email: string, password: string) => {
+        try {
+          const res = await api.auth.login(email, password);
+          if (res.error) {
+            return { error: res.error, needsVerification: res.needsVerification };
+          }
           set({
-            user: {
-              firstName: 'Admin',
-              lastName: 'User',
-              email: 'Admin@Hoodease.com',
-              address: 'Admin Address',
-              dateOfBirth: '1990-01-01'
-            },
+            user: res.user,
             isAuthenticated: true,
-            isAdmin: true
+            isAdmin: res.user?.role === 'admin'
           });
-          return true;
+          return { user: res.user };
+        } catch (e: any) {
+          return { error: e.message || 'Login failed' };
         }
-
-        // For regular users, check if they exist in localStorage
-        const users: StoredUser[] = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find((u: StoredUser) => u.email === email && u.password === password);
-        
-        if (user) {
-          const { password, ...userWithoutPassword } = user;
-          set({
-            user: userWithoutPassword,
-            isAuthenticated: true,
-            isAdmin: false
-          });
-          return true;
-        }
-
-        return false;
       },
 
-      signup: (userData: StoredUser) => {
-        // Get existing users
-        const users: StoredUser[] = JSON.parse(localStorage.getItem('users') || '[]');
-        
-        // Check if email already exists
-        const existingUser = users.find((u: StoredUser) => u.email === userData.email);
-        if (existingUser) {
-          throw new Error('Email already exists');
+      signup: async (userData: any) => {
+        try {
+          const res = await api.auth.signup(userData);
+          if (res.error) {
+            return { error: res.error };
+          }
+          // Don't log in user automatically on signup
+          return { message: res.message };
+        } catch (e: any) {
+          return { error: e.message || 'Signup failed' };
         }
-
-        // Add new user
-        users.push(userData);
-        localStorage.setItem('users', JSON.stringify(users));
-
-        // Set current user (without password)
-        const { password, ...userWithoutPassword } = userData;
-        set({
-          user: userWithoutPassword,
-          isAuthenticated: true,
-          isAdmin: false
-        });
       },
 
       logout: () => {
@@ -94,14 +71,18 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           isAdmin: false
         });
-      }
+      },
+
+      openAuthModal: (mode) => set({ isAuthModalOpen: true, authModalMode: mode }),
+      closeAuthModal: () => set({ isAuthModalOpen: false }),
+      setAuthModalMode: (mode) => set({ authModalMode: mode }),
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ 
-        user: state.user, 
-        isAuthenticated: state.isAuthenticated, 
-        isAdmin: state.isAdmin 
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        isAdmin: state.isAdmin
       })
     }
   )

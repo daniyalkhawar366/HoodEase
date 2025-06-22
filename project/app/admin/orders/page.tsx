@@ -6,48 +6,79 @@ import { MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Inter } from 'next/font/google';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState([
-    { id: 'ORD001', customer: 'Ali Khan', date: '2024-07-21', total: 'PKR 5,999', status: 'Shipped' },
-    { id: 'ORD002', customer: 'Fatima Ahmed', date: '2024-07-21', total: 'PKR 2,499', status: 'Processing' },
-    { id: 'ORD003', customer: 'Zainab Bibi', date: '2024-07-20', total: 'PKR 8,999', status: 'Delivered' },
-    { id: 'ORD004', customer: 'Bilal Chaudhry', date: '2024-07-20', total: 'PKR 1,200', status: 'Cancelled' },
-    { id: 'ORD005', customer: 'Sana Iqbal', date: '2024-07-19', total: 'PKR 3,500', status: 'Shipped' },
-  ]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const statusOptions = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
-  const handleStatusChange = (orderId: string, newStatus: string) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/orders?type=active');
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+      const data = await response.json();
+      setOrders(data);
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not load active orders.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+      
+      // Refetch orders to reflect the change, as the item might move to history
+      fetchOrders();
+      toast.success(`Order status updated to ${newStatus}`);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to update order status.');
+    }
   };
 
   const getStatusClasses = (status: string) => {
     switch (status) {
       case 'Cancelled':
-        return 'bg-white text-red-500 hover:bg-gray-100';
+        return 'bg-red-900 text-red-400';
       case 'Shipped':
-        return 'bg-white text-black hover:bg-gray-100';
+        return 'bg-blue-900 text-blue-300';
       case 'Delivered':
-        return 'bg-white text-green-500 hover:bg-gray-100';
+        return 'bg-green-900 text-green-400';
       case 'Processing':
-        return 'bg-black text-white border border-gray-600 hover:bg-gray-800';
+        return 'bg-yellow-900 text-yellow-300';
       default:
-        return 'bg-gray-700 text-white';
+        return 'bg-gray-800 text-gray-300';
     }
   };
 
   return (
     <div className={`min-h-screen bg-[#111215] p-4 md:p-8 ${inter.className}`}>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Orders</h1>
-        <p className="text-gray-400">Manage and view recent orders.</p>
+        <h1 className="text-3xl font-bold text-white">Current Orders</h1>
+        <p className="text-gray-400">Manage processing and shipped orders.</p>
       </div>
       <div className="rounded-2xl shadow-xl bg-[#18191c] border border-gray-800 overflow-x-auto">
         <table className="min-w-full text-sm md:text-base">
@@ -62,55 +93,72 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <tr
-                key={order.id}
-                className="border-b border-gray-800 hover:bg-[#23242a] transition-colors duration-150 group"
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-white font-mono">{order.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-200">{order.customer}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-400">{order.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-200">{order.total}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold shadow-sm
-                      ${order.status === 'Delivered' ? 'bg-green-900 text-green-400' :
-                        order.status === 'Processing' ? 'bg-yellow-900 text-yellow-300' :
-                        order.status === 'Cancelled' ? 'bg-red-900 text-red-400' :
-                        order.status === 'Shipped' ? 'bg-blue-900 text-blue-300' :
-                        'bg-gray-800 text-gray-300'}
-                    `}
-                  >
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="p-2 rounded-lg hover:bg-[#23242a] transition-colors">
-                        <MoreVertical className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white min-w-[160px]">
-                      <div className="px-2 py-1 text-xs text-gray-400">Update Status</div>
-                      {statusOptions.map((status) => (
-                        <DropdownMenuItem
-                          key={status}
-                          onClick={() => handleStatusChange(order.id, status)}
-                          className={
-                            'flex items-center gap-2 ' +
-                            (order.status === status ? 'bg-blue-900 text-blue-300' : '')
-                          }
-                        >
-                          {order.status === status && <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />}
-                          {status}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                  Loading current orders...
+                </TableCell>
+              </TableRow>
+            ) : orders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                  No active orders found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              orders.map((order) => (
+                <tr
+                  key={order._id}
+                  className="border-b border-gray-800 hover:bg-[#23242a] transition-colors duration-150 group"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-white font-mono">{order.orderId || order._id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-200">{order.customerName || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-200">
+                    PKR {order.totalAmount.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getStatusClasses(
+                        order.status
+                      )}`}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="p-2 rounded-lg hover:bg-[#23242a] transition-colors">
+                          <MoreVertical className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white min-w-[160px]">
+                        <div className="px-2 py-1 text-xs text-gray-400">Update Status</div>
+                        {statusOptions.map((status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            onClick={() => handleStatusChange(order._id, status)}
+                            disabled={order.status === status}
+                            className={
+                              'flex items-center gap-2 cursor-pointer ' +
+                              (order.status === status
+                                ? 'bg-blue-900 text-blue-300'
+                                : 'hover:bg-gray-800')
+                            }
+                          >
+                            {order.status === status && <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />}
+                            {status}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
