@@ -60,8 +60,14 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      if (!response.ok) throw new Error('Login failed');
-      return response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+      if (!response.ok) throw new Error(data.error || 'Login failed');
+      return data;
     },
 
     signup: async (userData: {
@@ -77,8 +83,14 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
-      if (!response.ok) throw new Error('Signup failed');
-      return response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+      if (!response.ok) throw new Error(data.error || 'Signup failed');
+      return data;
     }
   }
 }; 

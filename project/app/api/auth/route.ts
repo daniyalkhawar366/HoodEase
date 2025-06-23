@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Find user by email
-    const user = await User.findOne({ email, isActive: true });
+    // Find user by email (case-insensitive)
+    const user = await User.findOne({ email: email.toLowerCase(), isActive: true });
     
     if (!user) {
       return NextResponse.json(

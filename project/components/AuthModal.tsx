@@ -70,10 +70,10 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed.');
-      toast.success(data.message);
+      toast.success(data.message, { style: { color: 'black' } });
       setView('login');
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message, { style: { color: 'black' } });
     } finally {
       setLoading(false);
     }
@@ -91,12 +91,13 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
                     label: "Resend Email",
                     onClick: () => handleResendVerification(email),
                 },
+                style: { color: 'black' }
             });
          } else {
-            toast.error(result.error);
+            toast.error(result.error, { style: { color: 'black' } });
          }
       } else {
-         toast.success("Login Successful!");
+         toast.success("Login Successful!", { style: { color: 'black' } });
          closeAuthModal();
       }
     } finally {
@@ -110,9 +111,9 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
     try {
       const result = await onSignup(signupData);
        if (result.error) {
-         toast.error(result.error);
+         toast.error(result.error, { style: { color: 'black' } });
        } else {
-         toast.success(result.message);
+         toast.success(result.message, { style: { color: 'black' } });
          setView('verification-sent');
        }
     } finally {
@@ -130,9 +131,9 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed.');
-      toast.success(data.message);
+      toast.success(data.message, { style: { color: 'black' } });
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message, { style: { color: 'black' } });
     } finally {
       setLoading(false);
     }
@@ -258,8 +259,8 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
   const renderVerificationSent = () => (
      <motion.div key="verification-sent" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-4 py-8">
         <Mail className="mx-auto h-16 w-16 text-green-500 bg-green-500/10 p-3 rounded-full" />
-        <h2 className="text-2xl font-semibold">Check your email</h2>
-        <p className="text-muted-foreground max-w-sm mx-auto">We've sent a verification link to your email address. Please check your inbox (and spam folder) to complete your registration.</p>
+        <h2 className="text-2xl font-semibold text-black">Check your email</h2>
+        <p className="max-w-sm mx-auto text-black">We've sent a verification link to your email address. Please check your inbox (and spam folder) to complete your registration.</p>
         <Button onClick={closeAuthModal} className="w-full bg-black text-white hover:bg-gray-800 mt-4">
             OK, I'll check my email
         </Button>

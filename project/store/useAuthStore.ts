@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api } from '@/lib/api';
+import { useStore } from './useStore';
 
 interface User {
   firstName: string;
@@ -44,7 +45,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: res.user,
             isAuthenticated: true,
-            isAdmin: res.user?.role === 'admin'
+            isAdmin: res.isAdmin || false
           });
           return { user: res.user };
         } catch (e: any) {
@@ -71,6 +72,13 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           isAdmin: false
         });
+        // Clear cart on logout
+        const { clearCart } = useStore.getState();
+        clearCart();
+        // Redirect to landing page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/';
+        }
       },
 
       openAuthModal: (mode) => set({ isAuthModalOpen: true, authModalMode: mode }),
