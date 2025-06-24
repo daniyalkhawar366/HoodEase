@@ -1,8 +1,9 @@
-import { getProductBySlug, getRelatedProducts, products } from '@/lib/products';
+import { products, getRelatedProducts } from '@/lib/products';
 import { productsWomen } from '@/lib/products-women';
 import { productsKids } from '@/lib/products-kids';
 import ProductDetailsClient from '@/components/ProductDetailsClient';
-import ProductCard from '@/components/ProductCard';
+import dbConnect from '@/lib/db';
+import Product from '@/models/Product';
 
 interface ProductPageProps {
   params: { slug: string };
@@ -43,8 +44,22 @@ const getAllRelatedProducts = (currentProduct: any, limit = 4) => {
     .slice(0, limit);
 };
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = getAllProductBySlug(params.slug);
+export default async function ProductPage({ params }: ProductPageProps) {
+  let product = null;
+  // Try to fetch from DB
+  try {
+    await dbConnect();
+    const dbProduct = await Product.findOne({ slug: params.slug, isActive: true }).lean();
+    if (dbProduct) {
+      product = JSON.parse(JSON.stringify(dbProduct));
+    }
+  } catch (e) {
+    // Ignore DB errors, fallback to static
+  }
+  // Fallback to static arrays if not found in DB
+  if (!product) {
+    product = getAllProductBySlug(params.slug);
+  }
   if (!product) {
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">

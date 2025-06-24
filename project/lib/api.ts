@@ -92,5 +92,22 @@ export const api = {
       if (!response.ok) throw new Error(data.error || 'Signup failed');
       return data;
     }
+  },
+
+  users: {
+    getCart: async (userId: string) => {
+      const response = await fetch(`${API_BASE}/users/${userId}/cart`);
+      if (!response.ok) throw new Error('Failed to fetch cart');
+      return response.json();
+    },
+    setCart: async (userId: string, items: any[]) => {
+      const response = await fetch(`${API_BASE}/users/${userId}/cart`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items })
+      });
+      if (!response.ok) throw new Error('Failed to update cart');
+      return response.json();
+    },
   }
 }; 

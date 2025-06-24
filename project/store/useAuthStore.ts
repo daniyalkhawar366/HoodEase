@@ -48,6 +48,10 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isAdmin: res.isAdmin || false
           });
+          // Hydrate cart from server
+          if (res.user && res.user._id) {
+            await useStore.getState().hydrateCartFromServer(res.user._id);
+          }
           return { user: res.user };
         } catch (e: any) {
           return { error: e.message || 'Login failed' };
