@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,10 +19,16 @@ import StripePayment from '@/components/StripePayment';
 
 export default function CheckoutPage() {
   const { cart, getTotalPrice, clearCart } = useStore();
+  const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
   const totalPrice = getTotalPrice();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState('');
+
+  useEffect(() => {
+    // Generate a unique order ID for this checkout session
+    setOrderId(`ORD${Date.now()}`);
+  }, []);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -34,20 +41,37 @@ export default function CheckoutPage() {
     country: 'Pakistan',
   });
 
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        address: user.address,
+      }));
+    }
+  }, [isAuthenticated, user]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handlePaymentSuccess = async () => {
+    if (!isAuthenticated || !user) {
+      toast.error('You must be logged in to place an order.');
+      return;
+    }
+
     try {
       // Create order in database
       const orderData = {
-        orderId: `ORD${Date.now()}`,
-        userId: 'temp-user-id', // You'll need to get this from auth
+        orderId, // FIX: Use the generated order ID
+        userId: user._id,
         customerName: `${formData.firstName} ${formData.lastName}`,
         items: cart.map(item => ({
-          productId: item.id,
+          productId: item._id, // FIX: Use correct MongoDB _id
           name: item.name,
           price: item.price,
           quantity: item.quantity,
@@ -69,24 +93,37 @@ export default function CheckoutPage() {
         email: formData.email
       };
 
+      // Debug logs
+      console.log('Cart:', cart);
+      console.log('Order items:', orderData.items);
+
+      // Validation: check for missing fields
+      const missingFields = orderData.items.filter(
+        item => !item.productId || !item.selectedColor || !item.selectedSize
+      );
+      if (missingFields.length > 0) {
+        toast.error('Some cart items are missing required options. Please review your cart.');
+        return;
+      }
+
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
 
+      const order = await response.json();
+
       if (response.ok) {
-        const order = await response.json();
-        setOrderId(order.orderId);
         clearCart();
         toast.success('Order placed successfully!');
-        router.push('/success');
+        router.push(`/success?orderId=${order.orderId}`);
       } else {
-        throw new Error('Failed to create order');
+        throw new Error(order.error || 'Failed to create order');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating order:', error);
-      toast.error('Order created but failed to save to database');
+      toast.error(`Order creation failed: ${error.message}`);
     }
   };
 
@@ -108,6 +145,17 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen pt-20 bg-white">
       <div className="container mx-auto px-4 py-8">
+        {/* TEMPORARY: Clear Cart Storage Button for Debugging */}
+        <Button
+          variant="outline"
+          onClick={() => {
+            localStorage.removeItem('cart-storage');
+            window.location.reload();
+          }}
+          className="mb-4"
+        >
+          Clear Cart Storage
+        </Button>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -251,7 +299,7 @@ export default function CheckoutPage() {
                 <CardContent>
                   <StripePayment
                     amount={totalPrice * 1.1}
-                    orderId={`ORD${Date.now()}`}
+                    orderId={orderId}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                   />
@@ -273,7 +321,7 @@ export default function CheckoutPage() {
               <CardContent>
                 <div className="space-y-4 mb-6">
                   {cart.map((item) => (
-                    <div key={`${item.id}-${item.selectedColor}-${item.selectedSize}`} className="flex gap-3">
+                    <div key={`${item._id}-${item.selectedColor}-${item.selectedSize}`} className="flex gap-3">
                       <div className="relative w-16 h-16 flex-shrink-0">
                         <Image
                           src={item.image}

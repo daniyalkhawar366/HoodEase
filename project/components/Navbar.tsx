@@ -19,7 +19,7 @@ interface NavbarProps {
 
 export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps) {
   const router = useRouter();
-  const { getTotalItems, toggleCart } = useStore();
+  const { cart, toggleCart } = useStore();
   const { 
     user, 
     isAuthenticated, 
@@ -32,7 +32,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [hasScrolled, setHasScrolled] = useState(false);
-  const totalItems = getTotalItems();
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   const pathname = usePathname();
 
   const isLandingPage = pathname === '/';
@@ -70,32 +70,18 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
   }, [lastScrollY]);
 
   const handleLogin = async (email: string, password: string) => {
-    const success = await login(email, password);
-    if (success) {
+    const result = await login(email, password);
+    if (result.user) {
       // Admin check is now handled within the store, redirect if isAdmin is true
-      if (email === 'Admin@Hoodease.com') {
+      if (result.user.email === 'Admin@Hoodease.com') {
         router.push('/admin');
       }
-      return true;
-    } else {
-      toast.error('Invalid credentials. Please try again.');
-      return false;
     }
+    return result;
   };
 
   const handleSignup = async (userData: any) => {
-    try {
-      const success = await signup(userData);
-      if (success) {
-        return true;
-      } else {
-        toast.error('Signup failed. Please try again.');
-        return false;
-      }
-    } catch (error: any) {
-      toast.error(error.message);
-      return false;
-    }
+    return await signup(userData);
   };
 
   const handleLogout = () => {

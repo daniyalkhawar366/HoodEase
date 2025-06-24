@@ -1,3 +1,5 @@
+'use client';
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -15,7 +17,11 @@ export interface Product {
   images: string[];
 }
 
-export interface CartItem extends Product {
+export interface CartItem {
+  _id: string; // MongoDB ObjectId
+  name: string;
+  price: number;
+  image: string;
   quantity: number;
   selectedColor: string;
   selectedSize: string;
@@ -24,12 +30,11 @@ export interface CartItem extends Product {
 interface StoreState {
   cart: CartItem[];
   isCartOpen: boolean;
-  addToCart: (product: Product, color: string, size: string, quantity?: number) => void;
-  removeFromCart: (id: string, color: string, size: string) => void;
-  updateQuantity: (id: string, color: string, size: string, quantity: number) => void;
+  addToCart: (item: Omit<CartItem, 'quantity'>) => void;
+  removeFromCart: (item: CartItem) => void;
+  updateQuantity: (item: CartItem, quantity: number) => void;
   clearCart: () => void;
   toggleCart: () => void;
-  getTotalItems: () => number;
   getTotalPrice: () => number;
 }
 
@@ -38,61 +43,65 @@ export const useStore = create<StoreState>()(
     (set, get) => ({
       cart: [],
       isCartOpen: false,
-      
-      addToCart: (product, color, size, quantity = 1) => {
-        const { cart } = get();
-        const existingItem = cart.find(
-          item => item.id === product.id && item.selectedColor === color && item.selectedSize === size
-        );
-        
-        if (existingItem) {
-          set({
-            cart: cart.map(item =>
-              item.id === product.id && item.selectedColor === color && item.selectedSize === size
-                ? { ...item, quantity: item.quantity + quantity }
-                : item
-            )
-          });
-        } else {
-          set({
-            cart: [...cart, { ...product, quantity, selectedColor: color, selectedSize: size }]
-          });
-        }
-      },
-      
-      removeFromCart: (id, color, size) => {
-        set({
-          cart: get().cart.filter(
-            item => !(item.id === id && item.selectedColor === color && item.selectedSize === size)
-          )
+
+      addToCart: (item) => {
+        console.log("Adding to cart:", item); // DEBUG: Log item being added
+        set((state) => {
+          const existingItemIndex = state.cart.findIndex(
+            (cartItem) =>
+              cartItem._id === item._id &&
+              cartItem.selectedColor === item.selectedColor &&
+              cartItem.selectedSize === item.selectedSize
+          );
+
+          if (existingItemIndex > -1) {
+            const updatedCart = [...state.cart];
+            updatedCart[existingItemIndex].quantity += 1;
+            return { cart: updatedCart };
+          } else {
+            return { cart: [...state.cart, { ...item, quantity: 1 }] };
+          }
         });
       },
-      
-      updateQuantity: (id, color, size, quantity) => {
-        if (quantity <= 0) {
-          get().removeFromCart(id, color, size);
-          return;
-        }
-        
-        set({
-          cart: get().cart.map(item =>
-            item.id === id && item.selectedColor === color && item.selectedSize === size
-              ? { ...item, quantity }
-              : item
-          )
-        });
-      },
-      
+
+      removeFromCart: (item) =>
+        set((state) => ({
+          cart: state.cart.filter(
+            (cartItem) =>
+              !(cartItem._id === item._id &&
+              cartItem.selectedColor === item.selectedColor &&
+              cartItem.selectedSize === item.selectedSize)
+          ),
+        })),
+
       clearCart: () => set({ cart: [] }),
+
+      updateQuantity: (item, quantity) =>
+        set((state) => {
+          if (quantity <= 0) {
+            get().removeFromCart(item);
+            return {};
+          }
+          return {
+            cart: state.cart.map((cartItem) =>
+              cartItem._id === item._id &&
+              cartItem.selectedColor === item.selectedColor &&
+              cartItem.selectedSize === item.selectedSize
+                ? { ...cartItem, quantity }
+                : cartItem
+            ),
+          };
+        }),
+
+      toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
       
-      toggleCart: () => set({ isCartOpen: !get().isCartOpen }),
-      
-      getTotalItems: () => get().cart.reduce((total, item) => total + item.quantity, 0),
-      
-      getTotalPrice: () => get().cart.reduce((total, item) => total + (item.price * item.quantity), 0),
+      getTotalPrice: () => {
+        return get().cart.reduce((total, item) => total + item.price * item.quantity, 0);
+      },
     }),
     {
-      name: 'hoodease-cart',
+      name: 'cart-storage',
+      partialize: (state) => ({ cart: state.cart }),
     }
   )
 );

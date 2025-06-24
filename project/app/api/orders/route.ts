@@ -7,7 +7,22 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json();
-    const order = new Order(body);
+    
+    // Map cart items to order items, renaming _id to productId
+    const orderItems = body.items.map((item: any) => {
+      const { _id, ...rest } = item;
+      return {
+        ...rest,
+        productId: _id,
+      };
+    });
+
+    const newOrderData = {
+      ...body,
+      items: orderItems,
+    };
+
+    const order = new Order(newOrderData);
     await order.save();
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

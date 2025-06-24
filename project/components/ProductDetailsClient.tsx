@@ -36,7 +36,26 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
       return;
     }
     
-    addToCart(product, selectedColor, selectedSize, quantity);
+    // Debug log for cart item
+    console.log('Adding to cart:', {
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      selectedColor,
+      selectedSize,
+    });
+    
+    addToCart({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      selectedColor: selectedColor,
+      selectedSize: selectedSize,
+      // quantity is handled by the store
+    });
+
     toast.success('Added to cart!');
   };
 

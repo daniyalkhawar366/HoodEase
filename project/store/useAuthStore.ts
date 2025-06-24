@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { useStore } from './useStore';
 
 interface User {
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;

@@ -17,6 +17,8 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
   const [view, setView] = useState<AuthView>(authModalMode);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [signupError, setSignupError] = useState<string | null>(null);
   
   // Form states
   const [email, setEmail] = useState('');
@@ -32,6 +34,7 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
 
   useEffect(() => {
     setView(authModalMode);
+    setSignupError(null);
   }, [authModalMode]);
 
   // Reset fields when view or modal visibility changes
@@ -51,11 +54,14 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
         });
         setShowPassword(false);
         setLoading(false);
+        setLoginError(null);
+        setSignupError(null);
       }, 300);
     } else {
         // Reset fields when view changes
         setEmail('');
         setPassword('');
+        setSignupError(null);
     }
   }, [view, isAuthModalOpen]);
 
@@ -82,9 +88,11 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setLoginError(null);
     try {
       const result = await onLogin(email, password);
-      if (result.error) {
+      if (result && result.error) {
+         setLoginError(result.error);
          if (result.needsVerification) {
             toast.error(result.error, {
                 action: {
@@ -93,11 +101,9 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
                 },
                 style: { color: 'black' }
             });
-         } else {
-            toast.error(result.error, { style: { color: 'black' } });
          }
-      } else {
-         toast.success("Login Successful!", { style: { color: 'black' } });
+      } else if (result && result.user) {
+         setLoginError(null);
          closeAuthModal();
       }
     } finally {
@@ -108,12 +114,13 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setSignupError(null);
     try {
       const result = await onSignup(signupData);
-       if (result.error) {
-         toast.error(result.error, { style: { color: 'black' } });
-       } else {
-         toast.success(result.message, { style: { color: 'black' } });
+       if (result && result.error) {
+         setSignupError(result.error);
+       } else if (result && result.message) {
+         setSignupError(null);
          setView('verification-sent');
        }
     } finally {
@@ -150,19 +157,22 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
           <Label htmlFor="login-email">Email</Label>
           <div className={inputWithIconClasses}>
             <Mail className={iconClasses} />
-            <Input id="login-email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className={inputClasses} autoComplete="new-password" />
+            <Input id="login-email" type="email" placeholder="you@example.com" value={email} onChange={e => { setEmail(e.target.value); setLoginError(null); }} required className={inputClasses} autoComplete="new-password" />
           </div>
         </div>
         <div>
           <Label htmlFor="login-password">Password</Label>
           <div className={inputWithIconClasses}>
             <Lock className={iconClasses} />
-            <Input id="login-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className={inputClasses} autoComplete="new-password" />
+            <Input id="login-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => { setPassword(e.target.value); setLoginError(null); }} required className={inputClasses} autoComplete="new-password" />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="p-2 text-muted-foreground mr-2">
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
         </div>
+        {loginError && (
+          <div className="text-red-600 text-sm font-medium mt-1">{loginError}</div>
+        )}
         <div className="text-right">
             <Button variant="link" size="sm" type="button" onClick={() => setView('forgot-password')} className="text-gray-600 hover:text-black">
                 Forgot your password?
@@ -225,6 +235,9 @@ export default function AuthModal({ onLogin, onSignup }: { onLogin: (email: stri
                 <Input id="dateOfBirth" type="date" value={signupData.dateOfBirth} onChange={e => setSignupData({...signupData, dateOfBirth: e.target.value})} required className={inputClasses} />
             </div>
         </div>
+        {signupError && (
+          <div className="text-red-600 text-sm font-medium mt-1">{signupError}</div>
+        )}
         <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800" disabled={loading}>
           {loading ? 'Creating Account...' : 'Create Account'}
         </Button>
