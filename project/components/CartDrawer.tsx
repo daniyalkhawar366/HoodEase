@@ -10,6 +10,9 @@ import Link from 'next/link';
 export default function CartDrawer() {
   const { cart, isCartOpen, toggleCart, updateQuantity, removeFromCart, getTotalPrice } = useStore();
 
+  // Debug: Log cart contents
+  console.log('Cart contents:', cart);
+
   const totalPrice = getTotalPrice();
 
   return (
@@ -31,7 +34,7 @@ export default function CartDrawer() {
               </div>
             ) : (
               <div className="space-y-4">
-                {cart.map((item) => (
+                {cart.map((item: any) => (
                   <div key={`${item._id}-${item.selectedColor}-${item.selectedSize}`} className="flex gap-4 p-4 border rounded-lg">
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <Image
@@ -72,11 +75,11 @@ export default function CartDrawer() {
                           size="icon"
                           onClick={() => updateQuantity(item, item.quantity + 1)}
                           className="h-6 w-6 bg-black text-white border-black hover:bg-gray-800"
-                          disabled={item.quantity >= (item.stock || 1)}
+                          disabled={item.quantity >= (item.stockByVariant || 1)}
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
-                        {item.stock !== undefined && item.quantity >= item.stock && (
+                        {item.stockByVariant !== undefined && item.quantity >= item.stockByVariant && (
                           <span className="text-xs text-red-500 ml-2">Max stock</span>
                         )}
                       </div>

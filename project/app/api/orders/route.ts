@@ -10,14 +10,11 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     const body = await request.json();
     
-    // Map cart items to order items, converting _id to ObjectId for productId
-    const orderItems = body.items.map((item: any) => {
-      const { _id, ...rest } = item;
-      return {
-        ...rest,
-        productId: new mongoose.Types.ObjectId(_id),
-      };
-    });
+    // Map cart items to order items, using productId from frontend
+    const orderItems = body.items.map((item: any) => ({
+      ...item,
+      productId: new mongoose.Types.ObjectId(item.productId),
+    }));
 
     const newOrderData = {
       ...body,
@@ -30,16 +27,42 @@ export async function POST(request: NextRequest) {
 
     // Update product stock after order is placed
     await Promise.all(orderItems.map(async (item: any) => {
-      // Find the product
+      console.log('[Order API] Incoming productId:', item.productId);
+      console.log('[Order API] Updating stock for productId:', item.productId.toString(), 'color:', item.selectedColor, 'size:', item.selectedSize, 'qty:', item.quantity, 'variantId:', item.variantId);
+      // Always use fallback: load product, find variant, update, save
       const product = await Product.findById(item.productId);
-      if (!product) return;
-      // Find the correct variant
-      const variant = product.stockByVariant.find(
-        (v: any) => v.color === item.selectedColor && v.size === item.selectedSize
-      );
+      if (!product) {
+        console.log('[Order API] Product not found for ID:', item.productId.toString());
+        return;
+      }
+      let variant = null;
+      if (item.variantId && product.stockByVariant.id) {
+        // Try to find by ObjectId
+        const variantObjectId = typeof item.variantId === 'string'
+          ? new mongoose.Types.ObjectId(item.variantId)
+          : item.variantId;
+        variant = product.stockByVariant.id(variantObjectId);
+      }
+      if (!variant) {
+        // Fallback to color/size
+        const normColor = item.selectedColor?.trim().toLowerCase();
+        const normSize = item.selectedSize?.trim().toLowerCase();
+        variant = product.stockByVariant.find(
+          (v: any) =>
+            v.color.trim().toLowerCase() === normColor &&
+            v.size.trim().toLowerCase() === normSize
+        );
+      }
       if (variant) {
         variant.quantity = Math.max(0, variant.quantity - item.quantity);
-        await product.save();
+        try {
+          await product.save();
+          console.log('[Order API] Updated variant after save:', JSON.stringify(variant));
+        } catch (err) {
+          console.error('[Order API] Error saving product:', err);
+        }
+      } else {
+        console.log('[Order API] No matching variant found for color:', item.selectedColor, 'size:', item.selectedSize, 'variantId:', item.variantId);
       }
     }));
 

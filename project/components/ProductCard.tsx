@@ -31,8 +31,8 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       whileHover={{ y: -5 }}
       className="group"
     >
-      <Card className="overflow-hidden border border-warm-light shadow-sm hover:shadow-lg transition-all duration-300 bg-white">
-        <div className="relative aspect-square overflow-hidden">
+      <Card className="overflow-hidden border border-warm-light shadow-sm hover:shadow-lg transition-all duration-300 bg-white w-full">
+        <div className="relative aspect-square overflow-hidden w-full">
           <Image
             src={product.image}
             alt={product.name}
@@ -47,12 +47,12 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             <ShoppingCart className="h-4 w-4" />
           </Button>
         </div>
-        <CardContent className="p-6">
-          <h3 className="font-semibold text-lg mb-2 group-hover:text-text/70 transition-colors text-text minimal-text" style={{ fontFamily: 'Poppins, Inter, sans-serif' }}>
+        <CardContent className="p-4 md:p-6">
+          <h3 className="font-semibold text-base md:text-lg mb-2 group-hover:text-text/70 transition-colors text-text minimal-text" style={{ fontFamily: 'Poppins, Inter, sans-serif' }}>
             {product.name}
           </h3>
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-text" style={{ fontFamily: 'Poppins, Inter, sans-serif' }}>
+            <span className="text-lg md:text-2xl font-bold text-text" style={{ fontFamily: 'Poppins, Inter, sans-serif' }}>
               PKR {product.price.toLocaleString('en-PK')}
             </span>
           </div>

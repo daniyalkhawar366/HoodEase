@@ -64,6 +64,9 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Debug: Log cart contents before placing order
+    console.log('Cart contents before order:', cart);
+
     try {
       // Create order in database
       const orderData = {
@@ -71,13 +74,14 @@ export default function CheckoutPage() {
         userId: user._id,
         customerName: `${formData.firstName} ${formData.lastName}`,
         items: cart.map(item => ({
-          productId: item._id, // FIX: Use correct MongoDB _id
+          productId: item._id, // parent product _id
           name: item.name,
           price: item.price,
           quantity: item.quantity,
           selectedColor: item.selectedColor,
           selectedSize: item.selectedSize,
-          image: item.image
+          image: item.image,
+          ...(item.variantId ? { variantId: item.variantId } : {}) // Always include variantId if present
         })),
         totalAmount: totalPrice * 1.1, // Including tax
         status: 'Processing',
@@ -144,29 +148,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen pt-20 bg-white">
-      <div className="container mx-auto px-4 py-8">
-        {/* TEMPORARY: Clear Cart Storage Button for Debugging */}
-        <Button
-          variant="outline"
-          onClick={() => {
-            localStorage.removeItem('cart-storage');
-            window.location.reload();
-          }}
-          className="mb-4"
-        >
-          Clear Cart Storage
-        </Button>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl font-bold mb-2">Checkout</h1>
-          <p className="text-gray-600">Complete your order</p>
-        </motion.div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
+    <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Checkout Form */}
           <div className="space-y-6">
             {/* Contact Information */}

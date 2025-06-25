@@ -46,6 +46,10 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
   const logoHoverOpacityClass = 'hover:opacity-70';
   const underlineColorClass = isAdminPage ? 'bg-white' : (isLandingPage ? 'bg-white' : 'bg-black');
 
+  const isMenActive = pathname.startsWith('/shop/men');
+  const isWomenActive = pathname.startsWith('/shop/women');
+  const isKidsActive = pathname.startsWith('/shop/kids');
+
   // Handle scroll behavior for showing/hiding navbar and changing background
   useEffect(() => {
     const handleScroll = () => {
@@ -117,7 +121,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
         transition={{ duration: 0.3 }}
         className={`${isStatic ? 'static w-full' : 'fixed top-0 left-0 right-0'} z-50 transition-colors duration-300 ${isLandingPage && !hasScrolled ? 'bg-transparent' : 'bg-white/95 backdrop-blur-sm border-b border-gray-200'}`}
       >
-        <div className="container mx-auto px-6 py-6 flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4 md:py-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
@@ -147,21 +151,21 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
               }}
             >
               MEN
-              <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${underlineColorClass} transition-all duration-300 group-hover:w-full`}></span>
+              <span className={`absolute bottom-0 left-0 h-0.5 ${underlineColorClass} transition-all duration-300 ${isMenActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
             <Link 
               href="/shop/women" 
               className={`${isLandingPage ? 'text-white hover:text-gray-200' : 'text-black/80 hover:text-gray-700'} transition-colors duration-300 minimal-text text-sm relative group`}
             >
               WOMEN
-              <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${underlineColorClass} transition-all duration-300 group-hover:w-full`}></span>
+              <span className={`absolute bottom-0 left-0 h-0.5 ${underlineColorClass} transition-all duration-300 ${isWomenActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
             <Link 
               href="/shop/kids" 
               className={`${isLandingPage ? 'text-white hover:text-gray-200' : 'text-black/80 hover:text-gray-700'} transition-colors duration-300 minimal-text text-sm relative group`}
             >
               KIDS
-              <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${underlineColorClass} transition-all duration-300 group-hover:w-full`}></span>
+              <span className={`absolute bottom-0 left-0 h-0.5 ${underlineColorClass} transition-all duration-300 ${isKidsActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
             <Link 
               href="/about" 
@@ -266,6 +270,13 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
                 </Button>
               </div>
             )}
+          </div>
+
+          {/* Mobile menu */}
+          <div className="md:hidden">
+            {/* Add your mobile menu here, e.g., a dropdown or slide-out menu */}
+            {/* Example: */}
+            {/* <MobileMenu isOpen={mobileMenuOpen} onClose={closeMobileMenu} /> */}
           </div>
         </div>
       </motion.nav>

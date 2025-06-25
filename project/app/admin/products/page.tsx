@@ -7,9 +7,6 @@ import Image from 'next/image';
 import { MoreVertical, PlusCircle, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { products as productsMen } from '@/lib/products';
-import { productsWomen } from '@/lib/products-women';
-import { productsKids } from '@/lib/products-kids';
 import { Inter } from 'next/font/google';
 import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -47,23 +44,10 @@ const subcategories = {
 const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const colors = ['Black', 'White', 'Gray', 'Navy', 'Blue', 'Red', 'Green', 'Yellow', 'Pink', 'Purple', 'Orange', 'Brown', 'Beige', 'Olive'];
 
-// Combine all products and add random stock
-const allProducts = [...productsMen, ...productsWomen, ...productsKids].map(p => {
-  const stock = Math.floor(Math.random() * 201); // Random stock between 0 and 200
-  let status = 'In Stock';
-  if (stock === 0) {
-    status = 'Out of Stock';
-  } else if (stock < 20) {
-    status = 'Low Stock';
-  }
-  return { ...p, stock, status };
-});
-
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editProduct, setEditProduct] = useState<any>(null);
-  const [editFields, setEditFields] = useState({ price: '', stock: '' });
   const [modalOpen, setModalOpen] = useState(false);
   const [addProductModalOpen, setAddProductModalOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -80,7 +64,6 @@ export default function ProductsPage() {
     description: '',
     colors: [] as string[],
     sizes: [] as string[],
-    stock: '0'
   });
 
   // 1. Add to state for add/edit forms:
@@ -88,7 +71,11 @@ export default function ProductsPage() {
   const [editStockByVariant, setEditStockByVariant] = useState<{ color: string, size: string, quantity: number }[]>([]);
 
   // State for color/size selection per product
-  const [variantSelections, setVariantSelections] = useState({});
+  const [variantSelections, setVariantSelections] = useState<Record<string, { color: string; size: string }>>({});
+
+  // Add state for delete dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<any>(null);
 
   // Sidebar auto-open on left edge hover
   useEffect(() => {
@@ -146,15 +133,12 @@ export default function ProductsPage() {
   // 4. When opening edit modal, initialize editStockByVariant
   const handleEditClick = (product: any) => {
     setEditProduct(product);
-    setEditFields({
-      price: product.price.toString(),
-    });
     setEditStockByVariant(product.stockByVariant || getAllVariants(product.colors, product.sizes));
     setModalOpen(true);
   };
 
   const handleFieldChange = (field: string, value: string) => {
-    setEditFields((prev) => ({ ...prev, [field]: value }));
+    setAddProductForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
@@ -164,7 +148,7 @@ export default function ProductsPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          price: Number(editFields.price),
+          price: Number(addProductForm.price),
           stockByVariant: editStockByVariant,
         }),
       });
@@ -274,7 +258,6 @@ export default function ProductsPage() {
       description: '',
       colors: [],
       sizes: [],
-      stock: '0'
     });
     setImageFile(null);
     setImagePreview('');
@@ -303,17 +286,30 @@ export default function ProductsPage() {
   };
 
   // Helper to get stock for a variant
-  function getVariantStock(product, color, size) {
+  function getVariantStock(product: any, color: string, size: string): number {
     if (!product.stockByVariant) return 0;
-    const variant = product.stockByVariant.find(
-      (v) => v.color === color && v.size === size
-    );
+    const variant = product.stockByVariant.find((v: { color: string; size: string; quantity: number }) => v.color === color && v.size === size);
     return variant ? variant.quantity : 0;
   }
 
+  // Add delete handler
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+    try {
+      await fetch(`/api/products/${productToDelete.slug}`, { method: 'DELETE' });
+      setProducts(prev => prev.filter(p => p._id !== productToDelete._id));
+      toast.success(`Product "${productToDelete.name}" deleted successfully.`);
+    } catch (error) {
+      toast.error('Failed to delete product.');
+    } finally {
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
+    }
+  };
+
   return (
-    <div className={`min-h-screen bg-[#111215] p-4 md:p-8 ${inter.className} relative`}>
-      <div className="mb-8 flex items-center justify-between">
+    <div className={`min-h-screen bg-[#111215] p-4 sm:p-6 md:p-8 ${inter.className} relative`}>
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
           <h1 className="text-3xl font-bold text-white">Products</h1>
           <p className="text-gray-400">Manage your product inventory.</p>
@@ -342,11 +338,11 @@ export default function ProductsPage() {
             ) : products.length === 0 ? (
               <tr><td colSpan={5} className="text-center py-8 text-gray-400">No products found.</td></tr>
             ) : (
-              products.map((product) => {
-                // Default color: first color; Default size: 'S' or first size
+              products.map((product: any) => {
+                // Only declare 'selection' once
                 const defaultColor = product.colors && product.colors.length > 0 ? product.colors[0] : '';
                 const defaultSize = product.sizes && product.sizes.includes('S') ? 'S' : (product.sizes && product.sizes.length > 0 ? product.sizes[0] : '');
-                const selection = variantSelections[product._id] || { color: defaultColor, size: defaultSize };
+                const selection = (variantSelections as Record<string, { color: string; size: string }>)[product._id] || { color: defaultColor, size: defaultSize };
                 const variantStock = getVariantStock(product, selection.color, selection.size);
                 const status = getStatus(variantStock);
                 return (
@@ -373,7 +369,7 @@ export default function ProductsPage() {
                               }));
                             }}
                           >
-                            {product.colors && product.colors.map((color) => (
+                            {product.colors && product.colors.map((color: string) => (
                               <option key={color} value={color}>{color}</option>
                             ))}
                           </select>
@@ -388,7 +384,7 @@ export default function ProductsPage() {
                               }));
                             }}
                           >
-                            {product.sizes && product.sizes.map((size) => (
+                            {product.sizes && product.sizes.map((size: string) => (
                               <option key={size} value={size}>{size}</option>
                             ))}
                           </select>
@@ -416,6 +412,9 @@ export default function ProductsPage() {
                           <DropdownMenuItem onClick={() => handleEditClick(product)}>
                             Edit
                           </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-500" onClick={() => { setProductToDelete(product); setDeleteDialogOpen(true); }}>
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
@@ -435,10 +434,10 @@ export default function ProductsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="block text-gray-300 mb-1">Price</label>
+              <label className="block text-white mb-1">Price</label>
               <Input
                 type="number"
-                value={editFields.price}
+                value={addProductForm.price}
                 onChange={e => handleFieldChange('price', e.target.value)}
                 className="bg-gray-800 border-gray-600 text-white"
               />
@@ -446,21 +445,21 @@ export default function ProductsPage() {
             {/* Stock By Variant Grid (Edit) */}
             {editProduct && editProduct.colors.length > 0 && editProduct.sizes.length > 0 && (
               <div>
-                <Label className="text-gray-300">Stock by Color & Size</Label>
+                <Label className="text-white">Stock by Color & Size</Label>
                 <div className="overflow-x-auto">
                   <table className="min-w-full border text-sm mt-2">
                     <thead>
                       <tr>
-                        <th className="px-2 py-1 border">Color</th>
-                        <th className="px-2 py-1 border">Size</th>
-                        <th className="px-2 py-1 border">Stock</th>
+                        <th className="px-2 py-1 border text-white">Color</th>
+                        <th className="px-2 py-1 border text-white">Size</th>
+                        <th className="px-2 py-1 border text-white">Stock</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {editStockByVariant.map((variant, idx) => (
+                      {editStockByVariant.map((variant: { color: string; size: string; quantity: number }, idx: number) => (
                         <tr key={variant.color + '-' + variant.size}>
-                          <td className="px-2 py-1 border">{variant.color}</td>
-                          <td className="px-2 py-1 border">{variant.size}</td>
+                          <td className="px-2 py-1 border text-white">{variant.color}</td>
+                          <td className="px-2 py-1 border text-white">{variant.size}</td>
                           <td className="px-2 py-1 border">
                             <Input
                               type="number"
@@ -565,17 +564,6 @@ export default function ProductsPage() {
               />
             </div>
 
-            <div>
-              <Label className="text-gray-300">Stock Quantity</Label>
-              <Input
-                type="number"
-                value={addProductForm.stock}
-                onChange={(e) => handleAddProductFormChange('stock', e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white"
-                placeholder="0"
-              />
-            </div>
-
             {/* Stock By Variant Grid (Add) */}
             {addProductForm.colors.length > 0 && addProductForm.sizes.length > 0 && (
               <div>
@@ -590,7 +578,7 @@ export default function ProductsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {addProductStockByVariant.map((variant, idx) => (
+                      {addProductStockByVariant.map((variant: { color: string; size: string; quantity: number }, idx: number) => (
                         <tr key={variant.color + '-' + variant.size}>
                           <td className="px-2 py-1 border">{variant.color}</td>
                           <td className="px-2 py-1 border">{variant.size}</td>
@@ -716,6 +704,26 @@ export default function ProductsPage() {
               disabled={!addProductForm.name || !addProductForm.price || !addProductForm.category || !addProductForm.subcategory || !imageFile}
             >
               Add Product
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="bg-[#18191c] border border-gray-700 rounded-xl max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Delete Product</DialogTitle>
+          </DialogHeader>
+          <div className="text-gray-300 mb-4">
+            Are you sure you want to delete <span className="font-bold text-white">{productToDelete?.name}</span>? This action cannot be undone.
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-red-600 text-white hover:bg-red-700" onClick={handleDeleteProduct}>
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

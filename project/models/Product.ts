@@ -1,5 +1,11 @@
 import mongoose from 'mongoose';
 
+const stockByVariantSchema = new mongoose.Schema({
+  color: { type: String, required: true },
+  size: { type: String, required: true },
+  quantity: { type: Number, required: true, min: 0 }
+}, { _id: true }); // Ensure each variant gets an _id
+
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -46,13 +52,7 @@ const productSchema = new mongoose.Schema({
   images: [{
     type: String
   }],
-  stockByVariant: [
-    {
-      color: { type: String, required: true },
-      size: { type: String, required: true },
-      quantity: { type: Number, required: true, min: 0 }
-    }
-  ],
+  stockByVariant: [stockByVariantSchema],
   isActive: {
     type: Boolean,
     default: true

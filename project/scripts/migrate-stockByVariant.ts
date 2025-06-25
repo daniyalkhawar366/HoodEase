@@ -1,37 +1,36 @@
-import dbConnect from '../lib/db';
+import mongoose from 'mongoose';
 import Product from '../models/Product';
+// @ts-ignore
+import dotenv from 'dotenv';
 
-async function migrateStockByVariant() {
-  await dbConnect();
+dotenv.config({ path: '.env.local' });
+
+async function migrateStockByVariantIds() {
+  await mongoose.connect(process.env.MONGODB_URI as string);
   const products = await Product.find({});
   let updatedCount = 0;
 
   for (const product of products) {
-    // Only migrate if not already migrated
-    if (product.stockByVariant && product.stockByVariant.length > 0) continue;
-    if (!product.colors || !product.sizes) continue;
-    const stockByVariant = [];
-    for (const color of product.colors) {
-      for (const size of product.sizes) {
-        // Assign random stock between 0 and 50
-        const quantity = Math.floor(Math.random() * 51);
-        stockByVariant.push({ color, size, quantity });
+    let changed = false;
+    if (Array.isArray(product.stockByVariant)) {
+      for (const variant of product.stockByVariant) {
+        if (!variant._id) {
+          variant._id = new mongoose.Types.ObjectId();
+          changed = true;
+        }
       }
     }
-    product.stockByVariant = stockByVariant;
-    // Remove old stock field if it exists
-    if (typeof product.stock !== 'undefined') {
-      product.stock = undefined;
+    if (changed) {
+      await product.save();
+      updatedCount++;
+      console.log(`Updated product ${product._id} with new variant _id fields.`);
     }
-    await product.save();
-    updatedCount++;
-    console.log(`Migrated product ${product.name} (${product._id})`);
   }
   console.log(`Migration complete. Updated ${updatedCount} products.`);
-  process.exit(0);
+  await mongoose.disconnect();
 }
 
-migrateStockByVariant().catch(err => {
+migrateStockByVariantIds().catch(err => {
   console.error('Migration failed:', err);
   process.exit(1);
 }); 

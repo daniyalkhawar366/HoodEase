@@ -42,6 +42,7 @@ export default function WomenShopPage() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchQueryParam = searchParams.get('q') || '';
 
   // Fetch products from database
   useEffect(() => {
@@ -65,9 +66,27 @@ export default function WomenShopPage() {
     fetchProducts();
   }, []);
 
-  const filteredProducts = activeSubcategory
+  // Helper for close match
+  function closeMatch(a: string = '', b: string = '') {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    return a.includes(b) || b.includes(a);
+  }
+
+  // Filter products by subcategory and search query
+  let filteredProducts = activeSubcategory
     ? products.filter((p) => p.subcategory === activeSubcategory)
     : products;
+
+  if (searchQueryParam) {
+    const q = searchQueryParam.toLowerCase();
+    filteredProducts = filteredProducts.filter(product =>
+      closeMatch(product.name, q) ||
+      closeMatch(product.category, q) ||
+      closeMatch(product.subcategory, q) ||
+      closeMatch(product.description, q)
+    );
+  }
 
   // Sort products based on sortOption
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -134,14 +153,16 @@ export default function WomenShopPage() {
                 className={`flex flex-col items-center group cursor-pointer transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}
                 style={{ zIndex: isActive ? 1 : 0 }}
                 onClick={() => {
-                  // Update URL with subcategory, preserve q and other params
+                  // Update URL with subcategory, remove 'q' param
                   const params = new URLSearchParams(window.location.search);
+                  params.delete('q');
                   if (isActive) {
                     params.delete('subcategory');
+                    router.push(`/shop/women`);
                   } else {
                     params.set('subcategory', cat.name);
+                    router.push(`?${params.toString()}`);
                   }
-                  router.push(`?${params.toString()}`);
                 }}
               >
                 <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden flex items-center justify-center bg-white shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">

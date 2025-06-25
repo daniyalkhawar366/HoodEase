@@ -58,6 +58,7 @@ export default function MenShopPage() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchQueryParam = searchParams.get('q') || '';
 
   // Fetch products from database
   useEffect(() => {
@@ -81,9 +82,27 @@ export default function MenShopPage() {
     fetchProducts();
   }, []);
 
-  const filteredProducts = activeSubcategory
+  // Helper for close match
+  function closeMatch(a: string = '', b: string = '') {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    return a.includes(b) || b.includes(a);
+  }
+
+  // Filter products by subcategory and search query
+  let filteredProducts = activeSubcategory
     ? products.filter((p) => p.subcategory === activeSubcategory)
     : products;
+
+  if (searchQueryParam) {
+    const q = searchQueryParam.toLowerCase();
+    filteredProducts = filteredProducts.filter(product =>
+      closeMatch(product.name, q) ||
+      closeMatch(product.category, q) ||
+      closeMatch(product.subcategory, q) ||
+      closeMatch(product.description, q)
+    );
+  }
 
   // Sort products based on sortOption
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -150,14 +169,13 @@ export default function MenShopPage() {
                 className={`flex flex-col items-center group cursor-pointer transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}
                 style={{ zIndex: isActive ? 1 : 0 }}
                 onClick={() => {
-                  // Update URL with subcategory, preserve q and other params
+                  // Update URL with subcategory, remove 'q' param
                   const params = new URLSearchParams(window.location.search);
+                  params.delete('q');
                   if (isActive) {
-                    // Remove subcategory and go to /shop/men with only q if present
+                    // Remove subcategory and go to /shop/men
                     params.delete('subcategory');
-                    const q = params.get('q');
-                    const newUrl = q ? `?q=${encodeURIComponent(q)}` : '';
-                    router.push(`/shop/men${newUrl}`);
+                    router.push(`/shop/men`);
                   } else {
                     params.set('subcategory', cat.name);
                     router.push(`?${params.toString()}`);

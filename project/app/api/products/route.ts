@@ -27,11 +27,12 @@ export async function GET(request: NextRequest) {
 
     if (searchQuery) {
       const regex = { $regex: searchQuery, $options: 'i' };
-      // Match name, subcategory, and category
+      // Match name, subcategory, category, and description
       query.$or = [
         { name: regex },
         { subcategory: regex },
         { category: regex },
+        { description: regex },
       ];
     }
     console.log('[API] Product search query:', JSON.stringify(query));

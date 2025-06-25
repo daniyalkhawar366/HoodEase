@@ -31,32 +31,29 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
       openAuthModal('login');
       return;
     }
-    
     if (!selectedColor || !selectedSize) {
       toast.error('Please select both color and size');
       return;
     }
-    
-    // Debug log for cart item
-    console.log('Adding to cart:', {
-      _id: product._id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      selectedColor,
-      selectedSize,
-    });
-    
+    // Find the variant (for optional variantId)
+    const variant = product.stockByVariant?.find(
+      (v: any) => v.color === selectedColor && v.size === selectedSize
+    );
+    // Defensive: Warn if someone tries to use a variant _id as the cart item's _id
+    if (variant && product._id === variant._id) {
+      console.warn('[Cart] Attempted to use variant _id as product _id! This is incorrect.');
+    }
+    // Always use parent product._id for cart item _id
     addToCart({
-      _id: product._id,
+      _id: product._id, // <-- always parent product _id
       name: product.name,
       price: product.price,
       image: product.image,
       selectedColor: selectedColor,
       selectedSize: selectedSize,
-      stock: variantStock,
+      stock: variant ? variant.quantity : undefined,
+      ...(variant && variant._id ? { variantId: variant._id } : {}) // Always include variantId if available
     }, quantity);
-
     toast.success('Added to cart!');
   };
 

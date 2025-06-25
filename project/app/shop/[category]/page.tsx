@@ -90,9 +90,27 @@ export default function ShopPage({ params }: ShopPageProps) {
     return Array.from(colors);
   }, [products]);
 
+  // Helper for close match
+  function closeMatch(a: string = '', b: string = '') {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    return a.includes(b) || b.includes(a);
+  }
+
   // Filter and sort products
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
+
+    // Client-side search filter for q
+    if (searchQueryParam) {
+      const q = searchQueryParam.toLowerCase();
+      filtered = filtered.filter(product =>
+        closeMatch(product.name, q) ||
+        closeMatch(product.category, q) ||
+        closeMatch(product.subcategory, q) ||
+        closeMatch(product.description, q)
+      );
+    }
 
     // Filter by price range
     if (priceRange !== 'all') {
@@ -127,7 +145,7 @@ export default function ShopPage({ params }: ShopPageProps) {
     }
 
     return filtered;
-  }, [products, priceRange, selectedColors, sortBy]);
+  }, [products, priceRange, selectedColors, sortBy, searchQueryParam]);
 
   const toggleColor = (color: string) => {
     setSelectedColors(prev =>
@@ -183,16 +201,16 @@ export default function ShopPage({ params }: ShopPageProps) {
 
   return (
     <div key={searchQueryParam} className="min-h-screen pt-20 bg-gray-50 flex flex-col items-center">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold capitalize mb-4">
+          <h1 className="text-2xl md:text-4xl font-bold capitalize mb-4">
             {category}'s Collection
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-base md:text-lg">
             Discover our premium {category}'s hoodies collection
           </p>
         </motion.div>
@@ -202,7 +220,7 @@ export default function ShopPage({ params }: ShopPageProps) {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="lg:w-64 space-y-6"
+            className="lg:w-64 w-full space-y-6 mb-6 lg:mb-0"
           >
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <div className="flex items-center justify-between mb-4">
@@ -271,20 +289,22 @@ export default function ShopPage({ params }: ShopPageProps) {
           </motion.div>
 
           {/* Products Grid or Not Found */}
-          {filteredProducts.length === 0 && searchQueryParam ? (
-            <div className="flex flex-col items-center justify-center min-h-[300px] py-12">
-              <h2 className="text-3xl font-bold text-gray-700 mb-4">No items found</h2>
-              <p className="text-gray-500 text-lg">
-                We couldn't find any products matching <span className="font-semibold">"{searchQueryParam}"</span>.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProducts.map((product, index) => (
-                <ProductCard key={product._id} product={product} index={index} />
-              ))}
-            </div>
-          )}
+          <div className="flex-1 w-full">
+            {filteredProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center min-h-[200px] py-8">
+                <h2 className="text-xl md:text-3xl font-bold text-gray-700 mb-4">No items found</h2>
+                <p className="text-gray-500 text-base md:text-lg">
+                  We couldn't find any products matching <span className="font-semibold">"{searchQueryParam}"</span>.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProducts.map((product, index) => (
+                  <ProductCard key={product._id} product={product} index={index} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
