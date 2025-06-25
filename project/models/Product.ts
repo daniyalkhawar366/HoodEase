@@ -46,11 +46,13 @@ const productSchema = new mongoose.Schema({
   images: [{
     type: String
   }],
-  stock: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
+  stockByVariant: [
+    {
+      color: { type: String, required: true },
+      size: { type: String, required: true },
+      quantity: { type: Number, required: true, min: 0 }
+    }
+  ],
   isActive: {
     type: Boolean,
     default: true

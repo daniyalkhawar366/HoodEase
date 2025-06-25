@@ -97,12 +97,7 @@ export default function CartPage() {
                             variant="outline"
                             size="icon"
                             onClick={() =>
-                              updateQuantity(
-                                item.id,
-                                item.selectedColor,
-                                item.selectedSize,
-                                item.quantity - 1
-                              )
+                              updateQuantity(item, item.quantity - 1)
                             }
                             className="bg-black text-white border-black hover:bg-gray-800"
                           >
@@ -115,17 +110,16 @@ export default function CartPage() {
                             variant="outline"
                             size="icon"
                             onClick={() =>
-                              updateQuantity(
-                                item.id,
-                                item.selectedColor,
-                                item.selectedSize,
-                                item.quantity + 1
-                              )
+                              updateQuantity(item, item.quantity + 1)
                             }
                             className="bg-black text-white border-black hover:bg-gray-800"
+                            disabled={item.quantity >= (item.stock || 1)}
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
+                          {item.stock !== undefined && item.quantity >= item.stock && (
+                            <span className="text-xs text-red-500 ml-2">Max stock</span>
+                          )}
                         </div>
                       </div>
                     </div>

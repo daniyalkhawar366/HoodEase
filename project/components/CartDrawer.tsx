@@ -72,9 +72,13 @@ export default function CartDrawer() {
                           size="icon"
                           onClick={() => updateQuantity(item, item.quantity + 1)}
                           className="h-6 w-6 bg-black text-white border-black hover:bg-gray-800"
+                          disabled={item.quantity >= (item.stock || 1)}
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
+                        {item.stock !== undefined && item.quantity >= item.stock && (
+                          <span className="text-xs text-red-500 ml-2">Max stock</span>
+                        )}
                       </div>
                     </div>
                   </div>

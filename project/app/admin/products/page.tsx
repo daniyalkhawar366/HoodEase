@@ -83,6 +83,13 @@ export default function ProductsPage() {
     stock: '0'
   });
 
+  // 1. Add to state for add/edit forms:
+  const [addProductStockByVariant, setAddProductStockByVariant] = useState<{ color: string, size: string, quantity: number }[]>([]);
+  const [editStockByVariant, setEditStockByVariant] = useState<{ color: string, size: string, quantity: number }[]>([]);
+
+  // State for color/size selection per product
+  const [variantSelections, setVariantSelections] = useState({});
+
   // Sidebar auto-open on left edge hover
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -113,12 +120,36 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
+  // 2. Utility to get all color+size combinations
+  function getAllVariants(colors: string[], sizes: string[]) {
+    const variants: { color: string, size: string, quantity: number }[] = [];
+    for (const color of colors) {
+      for (const size of sizes) {
+        variants.push({ color, size, quantity: 0 });
+      }
+    }
+    return variants;
+  }
+
+  // 3. When colors or sizes change in add form, update stockByVariant
+  useEffect(() => {
+    setAddProductStockByVariant((prev) => {
+      const variants = getAllVariants(addProductForm.colors, addProductForm.sizes);
+      // Preserve existing quantities
+      return variants.map(v => {
+        const found = prev.find(p => p.color === v.color && p.size === v.size);
+        return found ? found : v;
+      });
+    });
+  }, [addProductForm.colors, addProductForm.sizes]);
+
+  // 4. When opening edit modal, initialize editStockByVariant
   const handleEditClick = (product: any) => {
     setEditProduct(product);
     setEditFields({
       price: product.price.toString(),
-      stock: product.stock?.toString() || '0',
     });
+    setEditStockByVariant(product.stockByVariant || getAllVariants(product.colors, product.sizes));
     setModalOpen(true);
   };
 
@@ -128,30 +159,26 @@ export default function ProductsPage() {
 
   const handleSave = async () => {
     if (!editProduct) return;
-
     try {
       const response = await fetch(`/api/products/${editProduct.slug}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           price: Number(editFields.price),
-          stock: Number(editFields.stock),
+          stockByVariant: editStockByVariant,
         }),
       });
-
       if (!response.ok) {
         throw new Error('Failed to update product');
       }
-
       const updatedProduct = await response.json();
-
       setProducts((prev) =>
         prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p))
       );
-      
       toast.success(`Product "${updatedProduct.name}" updated successfully.`);
       setModalOpen(false);
       setEditProduct(null);
+      setEditStockByVariant([]);
     } catch (error) {
       console.error(error);
       toast.error('Failed to update product.');
@@ -203,11 +230,7 @@ export default function ProductsPage() {
         toast.error('Please select an image for the product');
         return;
       }
-
-      // Upload image first
       const imageUrl = await handleImageUpload();
-
-      // Create product data
       const productData = {
         name: addProductForm.name,
         price: Number(addProductForm.price),
@@ -218,27 +241,24 @@ export default function ProductsPage() {
         images: [imageUrl],
         colors: addProductForm.colors,
         sizes: addProductForm.sizes,
-        stock: Number(addProductForm.stock),
+        stockByVariant: addProductStockByVariant,
         slug: addProductForm.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
         isActive: true
       };
-
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData),
       });
-
       if (!response.ok) {
         throw new Error('Failed to create product');
       }
-
       const newProduct = await response.json();
       setProducts(prev => [newProduct, ...prev]);
-      
       toast.success(`Product "${newProduct.name}" created successfully.`);
       setAddProductModalOpen(false);
       resetAddProductForm();
+      setAddProductStockByVariant([]);
     } catch (error) {
       console.error(error);
       toast.error('Failed to create product.');
@@ -282,6 +302,15 @@ export default function ProductsPage() {
     }
   };
 
+  // Helper to get stock for a variant
+  function getVariantStock(product, color, size) {
+    if (!product.stockByVariant) return 0;
+    const variant = product.stockByVariant.find(
+      (v) => v.color === color && v.size === size
+    );
+    return variant ? variant.quantity : 0;
+  }
+
   return (
     <div className={`min-h-screen bg-[#111215] p-4 md:p-8 ${inter.className} relative`}>
       <div className="mb-8 flex items-center justify-between">
@@ -314,7 +343,12 @@ export default function ProductsPage() {
               <tr><td colSpan={5} className="text-center py-8 text-gray-400">No products found.</td></tr>
             ) : (
               products.map((product) => {
-                const status = getStatus(product.stock || 0);
+                // Default color: first color; Default size: 'S' or first size
+                const defaultColor = product.colors && product.colors.length > 0 ? product.colors[0] : '';
+                const defaultSize = product.sizes && product.sizes.includes('S') ? 'S' : (product.sizes && product.sizes.length > 0 ? product.sizes[0] : '');
+                const selection = variantSelections[product._id] || { color: defaultColor, size: defaultSize };
+                const variantStock = getVariantStock(product, selection.color, selection.size);
+                const status = getStatus(variantStock);
                 return (
                   <tr
                     key={product._id}
@@ -325,7 +359,45 @@ export default function ProductsPage() {
                       <span className="font-medium text-white">{product.name}</span>
                     </td>
                     <td className="px-6 py-4 text-gray-200">PKR {product.price.toLocaleString()}</td>
-                    <td className="px-6 py-4 text-gray-200">{product.stock || 0}</td>
+                    <td className="px-6 py-4 text-gray-200">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-2 items-center">
+                          <label className="text-xs text-gray-400">Color:</label>
+                          <select
+                            className="bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                            value={selection.color}
+                            onChange={e => {
+                              setVariantSelections(prev => ({
+                                ...prev,
+                                [product._id]: { ...selection, color: e.target.value }
+                              }));
+                            }}
+                          >
+                            {product.colors && product.colors.map((color) => (
+                              <option key={color} value={color}>{color}</option>
+                            ))}
+                          </select>
+                          <label className="text-xs text-gray-400 ml-2">Size:</label>
+                          <select
+                            className="bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                            value={selection.size}
+                            onChange={e => {
+                              setVariantSelections(prev => ({
+                                ...prev,
+                                [product._id]: { ...selection, size: e.target.value }
+                              }));
+                            }}
+                          >
+                            {product.sizes && product.sizes.map((size) => (
+                              <option key={size} value={size}>{size}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="text-xs text-gray-300 mt-1">
+                          Stock: <span className="font-semibold text-white">{variantStock}</span>
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-block rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getStatusClasses(status)}`}
@@ -371,15 +443,43 @@ export default function ProductsPage() {
                 className="bg-gray-800 border-gray-600 text-white"
               />
             </div>
-            <div>
-              <label className="block text-gray-300 mb-1">Stock</label>
-              <Input
-                type="number"
-                value={editFields.stock}
-                onChange={e => handleFieldChange('stock', e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white"
-              />
-            </div>
+            {/* Stock By Variant Grid (Edit) */}
+            {editProduct && editProduct.colors.length > 0 && editProduct.sizes.length > 0 && (
+              <div>
+                <Label className="text-gray-300">Stock by Color & Size</Label>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border text-sm mt-2">
+                    <thead>
+                      <tr>
+                        <th className="px-2 py-1 border">Color</th>
+                        <th className="px-2 py-1 border">Size</th>
+                        <th className="px-2 py-1 border">Stock</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editStockByVariant.map((variant, idx) => (
+                        <tr key={variant.color + '-' + variant.size}>
+                          <td className="px-2 py-1 border">{variant.color}</td>
+                          <td className="px-2 py-1 border">{variant.size}</td>
+                          <td className="px-2 py-1 border">
+                            <Input
+                              type="number"
+                              min={0}
+                              value={variant.quantity}
+                              onChange={e => {
+                                const qty = Math.max(0, Number(e.target.value));
+                                setEditStockByVariant(prev => prev.map((v, i) => i === idx ? { ...v, quantity: qty } : v));
+                              }}
+                              className="bg-gray-800 border-gray-600 text-white w-24"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button onClick={handleSave} className="bg-blue-600 text-white hover:bg-blue-700">Save</Button>
@@ -475,6 +575,44 @@ export default function ProductsPage() {
                 placeholder="0"
               />
             </div>
+
+            {/* Stock By Variant Grid (Add) */}
+            {addProductForm.colors.length > 0 && addProductForm.sizes.length > 0 && (
+              <div>
+                <Label className="text-gray-300">Stock by Color & Size</Label>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border text-sm mt-2">
+                    <thead>
+                      <tr>
+                        <th className="px-2 py-1 border">Color</th>
+                        <th className="px-2 py-1 border">Size</th>
+                        <th className="px-2 py-1 border">Stock</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {addProductStockByVariant.map((variant, idx) => (
+                        <tr key={variant.color + '-' + variant.size}>
+                          <td className="px-2 py-1 border">{variant.color}</td>
+                          <td className="px-2 py-1 border">{variant.size}</td>
+                          <td className="px-2 py-1 border">
+                            <Input
+                              type="number"
+                              min={0}
+                              value={variant.quantity}
+                              onChange={e => {
+                                const qty = Math.max(0, Number(e.target.value));
+                                setAddProductStockByVariant(prev => prev.map((v, i) => i === idx ? { ...v, quantity: qty } : v));
+                              }}
+                              className="bg-gray-800 border-gray-600 text-white w-24"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Image Upload */}
             <div>

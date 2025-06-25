@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
+import Product from '@/models/Product';
+import mongoose from 'mongoose';
 
 // Create a new order
 export async function POST(request: NextRequest) {
@@ -8,22 +10,39 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     const body = await request.json();
     
-    // Map cart items to order items, renaming _id to productId
+    // Map cart items to order items, converting _id to ObjectId for productId
     const orderItems = body.items.map((item: any) => {
       const { _id, ...rest } = item;
       return {
         ...rest,
-        productId: _id,
+        productId: new mongoose.Types.ObjectId(_id),
       };
     });
 
     const newOrderData = {
       ...body,
       items: orderItems,
+      userId: new mongoose.Types.ObjectId(body.userId),
     };
 
     const order = new Order(newOrderData);
     await order.save();
+
+    // Update product stock after order is placed
+    await Promise.all(orderItems.map(async (item: any) => {
+      // Find the product
+      const product = await Product.findById(item.productId);
+      if (!product) return;
+      // Find the correct variant
+      const variant = product.stockByVariant.find(
+        (v: any) => v.color === item.selectedColor && v.size === item.selectedSize
+      );
+      if (variant) {
+        variant.quantity = Math.max(0, variant.quantity - item.quantity);
+        await product.save();
+      }
+    }));
+
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
     console.error('Error creating order:', error);

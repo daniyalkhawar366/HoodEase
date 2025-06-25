@@ -53,11 +53,21 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
       image: product.image,
       selectedColor: selectedColor,
       selectedSize: selectedSize,
-      // quantity is handled by the store
-    });
+      stock: variantStock,
+    }, quantity);
 
     toast.success('Added to cart!');
   };
+
+  // Helper to get stock for selected color+size
+  const getVariantStock = () => {
+    if (!product.stockByVariant) return 0;
+    const variant = product.stockByVariant.find(
+      (v: any) => v.color === selectedColor && v.size === selectedSize
+    );
+    return variant ? variant.quantity : 0;
+  };
+  const variantStock = getVariantStock();
 
   return (
     <div className="min-h-screen pt-20 bg-gray-50">
@@ -168,11 +178,15 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(Math.min(variantStock, quantity + 1))}
+                  disabled={quantity >= variantStock}
                   className="bg-white"
                 >
                   +
                 </Button>
+                {variantStock === 0 && (
+                  <span className="text-red-500 ml-4">Out of stock</span>
+                )}
               </div>
             </div>
 
@@ -183,6 +197,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                 size="lg"
                 className="w-full bg-black hover:bg-gray-800 text-white"
                 onClick={handleAddToCart}
+                disabled={variantStock === 0 || quantity > variantStock}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Add to Cart

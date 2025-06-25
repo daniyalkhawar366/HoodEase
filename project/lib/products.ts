@@ -454,7 +454,6 @@ export const products: Product[] = [
     ]
   },
 ];
-
 export const getProductsByCategory = (category: 'men' | 'women' | 'kids') =>
   products.filter(product => product.category === category);
 

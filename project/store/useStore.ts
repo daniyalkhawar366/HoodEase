@@ -17,6 +17,7 @@ export interface Product {
   sizes: string[];
   description: string;
   images: string[];
+  stock?: number;
 }
 
 export interface CartItem {
@@ -27,12 +28,13 @@ export interface CartItem {
   quantity: number;
   selectedColor: string;
   selectedSize: string;
+  stock?: number;
 }
 
 interface StoreState {
   cart: CartItem[];
   isCartOpen: boolean;
-  addToCart: (item: Omit<CartItem, 'quantity'>) => void;
+  addToCart: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void;
   removeFromCart: (item: CartItem) => void;
   updateQuantity: (item: CartItem, quantity: number) => void;
   clearCart: () => void;
@@ -47,7 +49,7 @@ export const useStore = create<StoreState>()(
       cart: [],
       isCartOpen: false,
 
-      addToCart: (item) => {
+      addToCart: (item, quantity = 1) => {
         set((state) => {
           const existingItemIndex = state.cart.findIndex(
             (cartItem) =>
@@ -57,11 +59,13 @@ export const useStore = create<StoreState>()(
           );
 
           let updatedCart;
+          const maxAddable = item.stock || 1;
           if (existingItemIndex > -1) {
             updatedCart = [...state.cart];
-            updatedCart[existingItemIndex].quantity += 1;
+            const currentQty = updatedCart[existingItemIndex].quantity;
+            updatedCart[existingItemIndex].quantity = Math.min(currentQty + quantity, maxAddable);
           } else {
-            updatedCart = [...state.cart, { ...item, quantity: 1 }];
+            updatedCart = [...state.cart, { ...item, quantity: Math.min(quantity, maxAddable), stock: item.stock }];
           }
           // Sync to server if logged in
           const { user, isAuthenticated } = useAuthStore.getState();
@@ -147,8 +151,29 @@ export const useStore = create<StoreState>()(
         try {
           console.log('[Cart Sync] Loading cart from server (hydrateCartFromServer)', userId);
           const data = await api.users.getCart(userId);
-          console.log('[Cart Sync] Loaded cart from server:', data.items);
-          set({ cart: data.items || [] });
+          // Fetch latest stock for each item
+          const itemsWithStock = await Promise.all(
+            (data.items || []).map(async (item: any) => {
+              try {
+                const res = await fetch(`/api/products/${item._id}`);
+                if (res.ok) {
+                  const prod = await res.json();
+                  let stock = 1;
+                  if (prod.stockByVariant) {
+                    const variant = prod.stockByVariant.find(
+                      (v: any) => v.color === item.selectedColor && v.size === item.selectedSize
+                    );
+                    stock = variant ? variant.quantity : 0;
+                  } else if (typeof prod.stock === 'number') {
+                    stock = prod.stock;
+                  }
+                  return { ...item, stock };
+                }
+              } catch {}
+              return { ...item, stock: 1 };
+            })
+          );
+          set({ cart: itemsWithStock });
         } catch (err) {
           console.error('[Cart Sync] Error loading cart from server:', err);
         }

@@ -72,12 +72,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
   const relatedProducts = getAllRelatedProducts(product);
   return <ProductDetailsClient product={product} relatedProducts={relatedProducts} />;
-}
-
-export async function generateStaticParams() {
+}export async function generateStaticParams() {
   return [
     ...products,
     ...productsWomen,
     ...productsKids,
   ].map((product) => ({ slug: product.slug }));
 }
+

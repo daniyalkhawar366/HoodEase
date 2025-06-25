@@ -4,7 +4,7 @@ import { stripe } from '@/lib/stripe';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { amount, currency = 'pkr', metadata = {} } = body;
+    const { amount, currency = 'usd', metadata = {} } = body;
 
     if (!amount || amount <= 0) {
       return NextResponse.json(

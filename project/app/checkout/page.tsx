@@ -117,7 +117,8 @@ export default function CheckoutPage() {
       if (response.ok) {
         clearCart();
         toast.success('Order placed successfully!');
-        router.push(`/success?orderId=${order.orderId}`);
+        // Redirect to home page after successful order
+        router.push('/');
       } else {
         throw new Error(order.error || 'Failed to create order');
       }
