@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Menu, LogOut } from 'lucide-react';
+import { ShoppingCart, Menu, LogOut, Heart, User as UserIcon, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useSearchStore } from '@/store/useSearchStore';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -29,6 +30,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
     logout, 
     openAuthModal 
   } = useAuthStore();
+  const { toggleCategorySearch } = useSearchStore();
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -37,6 +39,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
 
   const isLandingPage = pathname === '/';
   const isAdminPage = pathname === '/admin';
+  const isShopPage = pathname.startsWith('/shop');
 
   const textColorClass = isAdminPage ? 'text-white' : (isLandingPage ? 'text-white' : 'text-black');
   const hoverTextColorClass = isAdminPage ? 'hover:text-gray-200' : (isLandingPage ? 'hover:text-gray-200' : 'hover:text-gray-700');
@@ -97,6 +100,10 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
     } else {
       openAuthModal('login');
     }
+  };
+
+  const handleSearchClick = () => {
+    toggleCategorySearch();
   };
 
   return (
@@ -173,11 +180,52 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
           </div>
 
           <div className="flex items-center space-x-4">
+            {isShopPage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSearchClick}
+                className={`${textColorClass} ${hoverTextColorClass} hover:bg-transparent h-8 w-8 transition-colors duration-300`}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            )}
             {isAuthenticated && !isAdmin ? (
               <div className="flex items-center space-x-3">
-                <span className={`${textColorClass} text-sm font-medium`}>
-                  Hi, {user?.firstName}
-                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`${textColorClass} ${hoverTextColorClass} hover:bg-transparent h-8 w-8 transition-colors duration-300`}
+                  asChild
+                >
+                  <Link href="/account" aria-label="Account">
+                    <UserIcon className="h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`${textColorClass} ${hoverTextColorClass} hover:bg-transparent h-8 w-8 transition-colors duration-300`}
+                  asChild
+                >
+                  <Link href="/wishlist" aria-label="Wishlist">
+                    <Heart className="h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCartClick}
+                  className={`${textColorClass} ${hoverTextColorClass} hover:bg-transparent h-8 w-8 transition-colors duration-300 relative`}
+                  aria-label="Cart"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                      {totalItems}
+                    </span>
+                  )}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -218,22 +266,6 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
                 </Button>
               </div>
             )}
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCartClick}
-              className={`relative ${textColorClass} ${hoverTextColorClass} hover:bg-transparent h-10 w-10 transition-colors duration-300`}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span
-                suppressHydrationWarning
-                className={`absolute -top-1 -right-1 ${isLandingPage ? 'bg-white text-black' : 'bg-black text-white'} text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold transition-opacity duration-200 ${totalItems > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                aria-hidden={totalItems === 0}
-              >
-                {totalItems}
-              </span>
-            </Button>
           </div>
         </div>
       </motion.nav>

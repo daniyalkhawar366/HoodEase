@@ -21,7 +21,7 @@ const kidsCategories = [
     image: 'https://res.cloudinary.com/dun1zalow/image/upload/v1750243784/cartoon_zhwnhz.webp' 
   },
   { 
-    name: 'Party  Shirts',
+    name: 'Party Shirts',
     image: 'https://res.cloudinary.com/dun1zalow/image/upload/v1750243785/party_haqmjz.webp' 
   },
   { 
@@ -38,6 +38,7 @@ export default function KidsShopPage() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchQueryParam = searchParams.get('q') || '';
 
   // Fetch products from database
   useEffect(() => {
@@ -120,24 +121,36 @@ export default function KidsShopPage() {
 
         {/* Category Circles Row */}
         <div className="flex justify-center space-x-8 px-8 pb-6 mb-2">
-          {kidsCategories.map((cat) => (
-            <div
-              key={cat.name}
-              className={`flex flex-col items-center group cursor-pointer transition-transform duration-300 ${activeSubcategory === cat.name ? 'scale-110' : ''}`}
-              style={{ zIndex: activeSubcategory === cat.name ? 1 : 0 }}
-              onClick={() => setActiveSubcategory(activeSubcategory === cat.name ? null : cat.name)}
-            >
-              <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden flex items-center justify-center bg-white shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
-                <Image src={cat.image} alt={cat.name} width={80} height={80} className="object-cover w-full h-full" />
+          {kidsCategories.map((cat) => {
+            const isActive = activeSubcategory === cat.name;
+            return (
+              <div
+                key={cat.name}
+                className={`flex flex-col items-center group cursor-pointer transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}
+                style={{ zIndex: isActive ? 1 : 0 }}
+                onClick={() => {
+                  // Update URL with subcategory, preserve q and other params
+                  const params = new URLSearchParams(window.location.search);
+                  if (isActive) {
+                    params.delete('subcategory');
+                  } else {
+                    params.set('subcategory', cat.name);
+                  }
+                  router.push(`?${params.toString()}`);
+                }}
+              >
+                <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden flex items-center justify-center bg-white shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
+                  <Image src={cat.image} alt={cat.name} width={80} height={80} className="object-cover w-full h-full" />
+                </div>
+                <span className="mt-2 text-xs font-medium text-gray-700 text-center whitespace-nowrap transition-colors duration-300 group-hover:text-black">
+                  {cat.name}
+                </span>
+                {isActive && (
+                  <div className="w-10 h-1 bg-black rounded-full mt-2 transition-all duration-300" />
+                )}
               </div>
-              <span className="mt-2 text-xs font-medium text-gray-700 text-center whitespace-nowrap transition-colors duration-300 group-hover:text-black">
-                {cat.name}
-              </span>
-              {activeSubcategory === cat.name && (
-                <div className="w-10 h-1 bg-black rounded-full mt-2 transition-all duration-300" />
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
         {/* Sorting Dropdown */}
         <div className="mb-6 flex items-center gap-2 font-sans" style={{fontFamily: 'Poppins, Inter, sans-serif'}}>
@@ -157,15 +170,12 @@ export default function KidsShopPage() {
         </div>
 
         {/* Products Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="animate-pulse">
-                <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
-                <div className="bg-gray-200 h-4 rounded mb-2"></div>
-                <div className="bg-gray-200 h-4 rounded w-1/2"></div>
-              </div>
-            ))}
+        {!loading && filteredProducts.length === 0 && searchQueryParam ? (
+          <div className="flex flex-col items-center justify-center min-h-[300px] py-12">
+            <h2 className="text-3xl font-bold text-gray-700 mb-4">No items found</h2>
+            <p className="text-gray-500 text-lg">
+              We couldn't find any products matching <span className="font-semibold">"{searchQueryParam}"</span>.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 transition-all duration-500">

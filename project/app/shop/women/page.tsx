@@ -126,24 +126,36 @@ export default function WomenShopPage() {
 
         {/* Category Circles Row */}
         <div className="flex justify-center space-x-8 px-8 pb-6 mb-2">
-          {womenCategories.map((cat) => (
-            <div
-              key={cat.name}
-              className={`flex flex-col items-center group cursor-pointer transition-transform duration-300 ${activeSubcategory === cat.name ? 'scale-110' : ''}`}
-              style={{ zIndex: activeSubcategory === cat.name ? 1 : 0 }}
-              onClick={() => setActiveSubcategory(activeSubcategory === cat.name ? null : cat.name)}
-            >
-              <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden flex items-center justify-center bg-white shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
-                <Image src={cat.image} alt={cat.name} width={80} height={80} className="object-cover w-full h-full" />
+          {womenCategories.map((cat) => {
+            const isActive = activeSubcategory === cat.name;
+            return (
+              <div
+                key={cat.name}
+                className={`flex flex-col items-center group cursor-pointer transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}
+                style={{ zIndex: isActive ? 1 : 0 }}
+                onClick={() => {
+                  // Update URL with subcategory, preserve q and other params
+                  const params = new URLSearchParams(window.location.search);
+                  if (isActive) {
+                    params.delete('subcategory');
+                  } else {
+                    params.set('subcategory', cat.name);
+                  }
+                  router.push(`?${params.toString()}`);
+                }}
+              >
+                <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden flex items-center justify-center bg-white shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
+                  <Image src={cat.image} alt={cat.name} width={80} height={80} className="object-cover w-full h-full" />
+                </div>
+                <span className="mt-2 text-xs font-medium text-gray-700 text-center whitespace-nowrap transition-colors duration-300 group-hover:text-black">
+                  {cat.name}
+                </span>
+                {isActive && (
+                  <div className="w-10 h-1 bg-black rounded-full mt-2 transition-all duration-300" />
+                )}
               </div>
-              <span className="mt-2 text-xs font-medium text-gray-700 text-center whitespace-nowrap transition-colors duration-300 group-hover:text-black">
-                {cat.name}
-              </span>
-              {activeSubcategory === cat.name && (
-                <div className="w-10 h-1 bg-black rounded-full mt-2 transition-all duration-300" />
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
         {/* Sorting Dropdown */}
         <div className="mb-6 flex items-center gap-2 font-sans" style={{fontFamily: 'Poppins, Inter, sans-serif'}}>

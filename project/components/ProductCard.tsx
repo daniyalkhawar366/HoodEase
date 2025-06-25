@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '@/store/useStore';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +15,14 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+  const router = useRouter();
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/shop/${product.category}/${product.slug}`;
+    await navigator.clipboard.writeText(url);
+    alert('Product URL copied to clipboard!'); // Replace with toast if you have one
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}

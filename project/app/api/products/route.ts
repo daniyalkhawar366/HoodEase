@@ -6,12 +6,14 @@ export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const category = searchParams.get('category');
     const subcategory = searchParams.get('subcategory');
     const limit = parseInt(searchParams.get('limit') || '50');
     const page = parseInt(searchParams.get('page') || '1');
     const skip = (page - 1) * limit;
+    const searchQuery = searchParams.get('q');
+    console.log('[API] searchQuery param:', searchQuery);
 
     let query: any = { isActive: true };
 
@@ -22,6 +24,17 @@ export async function GET(request: NextRequest) {
     if (subcategory) {
       query.subcategory = subcategory;
     }
+
+    if (searchQuery) {
+      const regex = { $regex: searchQuery, $options: 'i' };
+      // Match name, subcategory, and category
+      query.$or = [
+        { name: regex },
+        { subcategory: regex },
+        { category: regex },
+      ];
+    }
+    console.log('[API] Product search query:', JSON.stringify(query));
 
     const products = await Product.find(query)
       .sort({ createdAt: -1 })

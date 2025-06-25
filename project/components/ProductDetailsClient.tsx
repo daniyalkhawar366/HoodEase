@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import ImageCarousel from '@/components/ImageCarousel';
@@ -20,10 +20,11 @@ interface ProductDetailsClientProps {
 
 export default function ProductDetailsClient({ product, relatedProducts }: ProductDetailsClientProps) {
   const { addToCart } = useStore();
-  const { isAuthenticated, openAuthModal } = useAuthStore();
+  const { isAuthenticated, openAuthModal, user } = useAuthStore();
   const [selectedColor, setSelectedColor] = useState<string>(product.colors[0]);
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0]);
   const [quantity, setQuantity] = useState(1);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
@@ -57,6 +58,55 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
     }, quantity);
 
     toast.success('Added to cart!');
+  };
+
+  const handleAddToWishlist = async () => {
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    if (!selectedColor || !selectedSize) {
+      toast.error('Please select both color and size');
+      return;
+    }
+    setWishlistLoading(true);
+    try {
+      if (!user || !user._id) {
+        toast.error('User not found. Please login again.');
+        setWishlistLoading(false);
+        return;
+      }
+      const res = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user._id,
+          productId: product._id,
+          selectedColor,
+          selectedSize,
+        })
+      });
+      if (res.ok) {
+        toast.success('Added to wishlist!');
+      } else {
+        const data = await res.json();
+        if (data.error === 'Item already in wishlist') {
+          toast.info('This item is already in your wishlist.');
+        } else {
+          toast.error(data.error || 'Failed to add to wishlist');
+        }
+      }
+    } catch (e) {
+      toast.error('Failed to add to wishlist');
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/product/${product.slug}`;
+    await navigator.clipboard.writeText(url);
+    toast.success('Product URL copied to clipboard!');
   };
 
   // Helper to get stock for selected color+size
@@ -202,12 +252,18 @@ export default function ProductDetailsClient({ product, relatedProducts }: Produ
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Add to Cart
               </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full flex items-center justify-center"
+                onClick={handleAddToWishlist}
+                disabled={wishlistLoading}
+              >
+                <Heart className="mr-2 h-5 w-5" />
+                Add to Wishlist
+              </Button>
               <div className="flex gap-3">
-                <Button variant="outline" size="lg" className="flex-1 bg-brand-600 text-black hover:bg-brand-700">
-                  <Heart className="mr-2 h-4 w-4" />
-                  Wishlist
-                </Button>
-                <Button variant="outline" size="lg" className="flex-1 bg-brand-600 text-black hover:bg-brand-700">
+                <Button variant="outline" size="lg" className="flex-1 bg-brand-600 text-black hover:bg-brand-700" onClick={handleShare}>
                   <Share2 className="mr-2 h-4 w-4" />
                   Share
                 </Button>

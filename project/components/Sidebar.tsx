@@ -63,7 +63,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     };
     const sectionMap = map[section as keyof typeof map];
     subcategory = sectionMap[category as keyof typeof sectionMap] || category;
-    router.push(`${path}?subcategory=${encodeURIComponent(subcategory)}`);
+    // Merge with current search params
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set('subcategory', subcategory);
+    const newUrl = `${path}?${currentParams.toString()}`;
+    console.log('[Sidebar] handleCategoryClick:', { section, category, subcategory, newUrl });
+    try {
+      router.push(newUrl);
+    } catch (err) {
+      console.error('[Sidebar] router.push failed, falling back to window.location.href', err);
+      window.location.href = newUrl;
+    }
     setTimeout(() => {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent(eventName, { detail: { subcategory } }));
