@@ -29,6 +29,7 @@ export interface CartItem {
   selectedColor: string;
   selectedSize: string;
   stock?: number;
+  variantId?: string;
 }
 
 interface StoreState {
