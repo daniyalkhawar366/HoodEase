@@ -201,7 +201,7 @@ export default function ShopPage({ params }: ShopPageProps) {
 
   return (
     <div key={searchQueryParam} className="min-h-screen pt-20 bg-gray-50 flex flex-col items-center">
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
+      <div className="container mx-auto px-2 sm:px-6 md:px-8 py-6 md:py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

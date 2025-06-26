@@ -78,6 +78,17 @@ export default function ClientLayoutWrapper({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isCategorySearchOpen, toggleCategorySearch]);
 
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarOpen]);
+
   return (
     <div className="flex flex-col min-h-screen">
       {!isAdminRoute && <Navbar toggleSidebar={toggleSidebar} isStatic={isStaticNavbar} />}

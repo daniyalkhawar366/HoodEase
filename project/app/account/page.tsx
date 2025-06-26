@@ -53,7 +53,7 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="container mx-auto py-12 max-w-lg pt-24">
+    <div className="container mx-auto py-8 max-w-lg pt-24 px-2 sm:px-0">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold">Account Settings</h2>
         <Link href="/account/orders">
@@ -61,53 +61,53 @@ export default function AccountPage() {
         </Link>
       </div>
       <div className="space-y-6">
-        <div>
+        <div className="mb-2">
           <label className="block font-medium mb-1">First Name</label>
           <input
             type="text"
             name="firstName"
             value={form.firstName}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 mb-2 focus:ring-2 focus:ring-black"
           />
         </div>
-        <div>
+        <div className="mb-2">
           <label className="block font-medium mb-1">Last Name</label>
           <input
             type="text"
             name="lastName"
             value={form.lastName}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 mb-2 focus:ring-2 focus:ring-black"
           />
         </div>
-        <div>
+        <div className="mb-2">
           <label className="block font-medium mb-1">Address</label>
           <input
             type="text"
             name="address"
             value={form.address}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 mb-2 focus:ring-2 focus:ring-black"
           />
         </div>
-        <div>
+        <div className="mb-2">
           <label className="block font-medium mb-1">Date of Birth</label>
           <input
             type="date"
             name="dateOfBirth"
             value={form.dateOfBirth}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 mb-2 focus:ring-2 focus:ring-black"
           />
         </div>
-        <div>
+        <div className="mb-2">
           <label className="block font-medium mb-1">Email</label>
           <input
             type="email"
             value={user.email}
             disabled
-            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+            className="w-full border rounded px-3 py-3 mb-2 bg-gray-100 cursor-not-allowed"
           />
         </div>
         <Button className="w-full mt-4" onClick={handleSave} disabled={loading}>

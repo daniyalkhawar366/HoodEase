@@ -121,8 +121,8 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
         transition={{ duration: 0.3 }}
         className={`${isStatic ? 'static w-full' : 'fixed top-0 left-0 right-0'} z-50 transition-colors duration-300 ${isLandingPage && !hasScrolled ? 'bg-transparent' : 'bg-white/95 backdrop-blur-sm border-b border-gray-200'}`}
       >
-        <div className="container mx-auto px-4 sm:px-6 py-4 md:py-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="container mx-auto px-2 sm:px-6 py-3 md:py-6 flex flex-wrap items-center justify-between gap-y-2 gap-x-2">
+          <div className="flex items-center gap-x-2 sm:gap-x-4">
             <Button
               variant="ghost"
               size="icon"
@@ -140,7 +140,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
             </Link>
           </div>
           
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center gap-x-4">
             <Link 
               href="/shop/men" 
               className={`${isLandingPage ? 'text-white hover:text-gray-200' : 'text-black/80 hover:text-gray-700'} transition-colors duration-300 minimal-text text-sm relative group`}
@@ -273,7 +273,7 @@ export default function Navbar({ toggleSidebar, isStatic = false }: NavbarProps)
           </div>
 
           {/* Mobile menu */}
-          <div className="md:hidden">
+          <div className="flex md:hidden items-center gap-x-2 mt-2 w-full justify-end">
             {/* Add your mobile menu here, e.g., a dropdown or slide-out menu */}
             {/* Example: */}
             {/* <MobileMenu isOpen={mobileMenuOpen} onClose={closeMobileMenu} /> */}

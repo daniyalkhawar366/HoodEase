@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { X } from 'lucide-react';
+import { X, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -100,7 +100,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         initial={{ x: '-100%' }}
         animate={{ x: isOpen ? '0%' : '-100%' }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed top-0 left-0 h-full w-96 bg-white shadow-lg z-50 p-6"
+        className="fixed top-0 left-0 h-full w-3/4 max-w-xs bg-white shadow-lg z-50 p-4 sm:w-96 sm:max-w-md"
       >
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold minimal-text">HOODEASE</h2>
@@ -111,145 +111,133 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         <nav className="flex flex-col md:grid md:grid-cols-3 gap-8 md:gap-4">
           {/* MEN Section */}
-          <div className="relative">
-            <h3 
-              className={`text-xl font-bold mb-4 minimal-text cursor-pointer pb-2 ${activeColumn === 'MEN' ? 'border-b-2 border-black' : ''}`}
-              onClick={() => setActiveColumn('MEN')}
-            >
-              MEN
-            </h3>
-            <motion.div
-              initial={{ height: 'auto', opacity: 1 }}
-              animate={{ height: activeColumn === 'MEN' ? 'auto' : 0, opacity: activeColumn === 'MEN' ? 1 : 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="overflow-hidden"
-            >
-              <div className="space-y-3">
-                <button onClick={() => handleCategoryClick('MEN', 'Casual')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Casual
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Dress')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Dress
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Polo')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Polo
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Printed')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Printed
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Denim')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Denim
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Linen')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Linen
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Oversized')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Oversized
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Flannel')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Flannel
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'Striped')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Striped
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('MEN', 'T-Shirts')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  T-Shirts
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-              </div>
-            </motion.div>
+          <div className="relative flex items-center justify-between cursor-pointer" onClick={() => setActiveColumn('MEN')}>
+            <h3 className={`text-xl font-bold mb-4 minimal-text pb-2 ${activeColumn === 'MEN' ? 'border-b-2 border-black' : ''}`}>MEN</h3>
+            <ChevronRight className={`h-5 w-5 ml-2 transition-transform ${activeColumn === 'MEN' ? 'rotate-90' : ''}`} />
           </div>
+          <motion.div
+            initial={{ height: 'auto', opacity: 1 }}
+            animate={{ height: activeColumn === 'MEN' ? 'auto' : 0, opacity: activeColumn === 'MEN' ? 1 : 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-3">
+              <button onClick={() => handleCategoryClick('MEN', 'Casual')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Casual
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Dress')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Dress
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Polo')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Polo
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Printed')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Printed
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Denim')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Denim
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Linen')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Linen
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Oversized')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Oversized
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Flannel')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Flannel
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'Striped')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Striped
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('MEN', 'T-Shirts')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                T-Shirts
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+            </div>
+          </motion.div>
 
           {/* WOMEN Section */}
-          <div className="relative">
-            <h3 
-              className={`text-xl font-bold mb-4 minimal-text cursor-pointer pb-2 ${activeColumn === 'WOMEN' ? 'border-b-2 border-black' : ''}`}
-              onClick={() => setActiveColumn('WOMEN')}
-            >
-              WOMEN
-            </h3>
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: activeColumn === 'WOMEN' ? 'auto' : 0, opacity: activeColumn === 'WOMEN' ? 1 : 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="overflow-hidden"
-            >
-              <div className="space-y-3">
-                <button onClick={() => handleCategoryClick('WOMEN', 'Casual')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Casual
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('WOMEN', 'Dress')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Dress
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('WOMEN', 'Printed')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Printed
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('WOMEN', 'Linen')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Linen
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('WOMEN', 'Oversized')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Oversized
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('WOMEN', 'Flannel')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Flannel
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-              </div>
-            </motion.div>
+          <div className="relative flex items-center justify-between cursor-pointer" onClick={() => setActiveColumn('WOMEN')}>
+            <h3 className={`text-xl font-bold mb-4 minimal-text pb-2 ${activeColumn === 'WOMEN' ? 'border-b-2 border-black' : ''}`}>WOMEN</h3>
+            <ChevronRight className={`h-5 w-5 ml-2 transition-transform ${activeColumn === 'WOMEN' ? 'rotate-90' : ''}`} />
           </div>
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: activeColumn === 'WOMEN' ? 'auto' : 0, opacity: activeColumn === 'WOMEN' ? 1 : 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-3">
+              <button onClick={() => handleCategoryClick('WOMEN', 'Casual')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Casual
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('WOMEN', 'Dress')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Dress
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('WOMEN', 'Printed')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Printed
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('WOMEN', 'Linen')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Linen
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('WOMEN', 'Oversized')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Oversized
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('WOMEN', 'Flannel')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Flannel
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+            </div>
+          </motion.div>
 
           {/* KIDS Section */}
-          <div className="relative">
-            <h3 
-              className={`text-xl font-bold mb-4 minimal-text cursor-pointer pb-2 ${activeColumn === 'KIDS' ? 'border-b-2 border-black' : ''}`}
-              onClick={() => setActiveColumn('KIDS')}
-            >
-              KIDS
-            </h3>
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: activeColumn === 'KIDS' ? 'auto' : 0, opacity: activeColumn === 'KIDS' ? 1 : 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="overflow-hidden"
-            >
-              <div className="space-y-3">
-                <button onClick={() => handleCategoryClick('KIDS', 'Graphic')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Graphic
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('KIDS', 'Casual')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Casual
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('KIDS', 'Cartoon')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Cartoon
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('KIDS', 'Party')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Party
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-                <button onClick={() => handleCategoryClick('KIDS', 'Flannel')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
-                  Flannel
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
-                </button>
-              </div>
-            </motion.div>
+          <div className="relative flex items-center justify-between cursor-pointer" onClick={() => setActiveColumn('KIDS')}>
+            <h3 className={`text-xl font-bold mb-4 minimal-text pb-2 ${activeColumn === 'KIDS' ? 'border-b-2 border-black' : ''}`}>KIDS</h3>
+            <ChevronRight className={`h-5 w-5 ml-2 transition-transform ${activeColumn === 'KIDS' ? 'rotate-90' : ''}`} />
           </div>
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: activeColumn === 'KIDS' ? 'auto' : 0, opacity: activeColumn === 'KIDS' ? 1 : 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-3">
+              <button onClick={() => handleCategoryClick('KIDS', 'Graphic')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Graphic
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('KIDS', 'Casual')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Casual
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('KIDS', 'Cartoon')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Cartoon
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('KIDS', 'Party')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Party
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              <button onClick={() => handleCategoryClick('KIDS', 'Flannel')} className="block text-left w-full text-text hover:text-gray-600 transition-colors text-sm relative group bg-transparent border-0 p-0">
+                Flannel
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-600 transition-all duration-300 group-hover:w-full"></span>
+              </button>
+            </div>
+          </motion.div>
         </nav>
       </motion.div>
     </>

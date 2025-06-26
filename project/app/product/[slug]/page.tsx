@@ -35,20 +35,7 @@ export default function ProductPage() {
 
   // Render product details using the fetched product
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Product Images */}
-          <div className="w-full lg:w-1/2">
-            {/* ...image carousel or image... */}
-          </div>
-          {/* Product Info */}
-          <div className="w-full lg:w-1/2 flex flex-col gap-6">
-            {/* ...product info, buttons, etc... */}
-          </div>
-        </div>
-      </div>
-    </div>
+    <ProductDetailsClient product={product} relatedProducts={[]} />
   );
 }
 
