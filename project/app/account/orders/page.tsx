@@ -15,7 +15,7 @@ export default function MyOrdersPage() {
       setLoading(true);
       fetch(`/api/orders?userId=${user._id}`)
         .then(res => res.json())
-        .then(data => setOrders(data || []))
+        .then(data => setOrders(Array.isArray(data) ? data : []))
         .finally(() => setLoading(false));
     }
   }, [user]);

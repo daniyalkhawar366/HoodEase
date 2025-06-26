@@ -138,7 +138,7 @@ export default function KidsShopPage() {
         </nav>
 
         {/* Category Circles Row */}
-        <div className="flex justify-center space-x-8 px-8 pb-6 mb-2">
+        <div className="flex overflow-x-auto no-scrollbar space-x-4 px-2 pb-6 mb-2 w-full">
           {kidsCategories.map((cat) => {
             const isActive = activeSubcategory === cat.name;
             return (

@@ -144,7 +144,7 @@ export default function WomenShopPage() {
         </nav>
 
         {/* Category Circles Row */}
-        <div className="flex justify-center space-x-8 px-8 pb-6 mb-2">
+        <div className="flex overflow-x-auto no-scrollbar space-x-4 px-2 pb-6 mb-2 w-full">
           {womenCategories.map((cat) => {
             const isActive = activeSubcategory === cat.name;
             return (
